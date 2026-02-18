@@ -73,11 +73,23 @@ def parse_item(item_element) -> Optional[dict]:
         price = int("".join(c for c in price_text if c.isdigit()) or "0")
 
         # サムネイル
-        img_el = item_element.select_one("img")
+        # 1. .js-thumbnail-image (background-image or data-original) を優先
+        thumb_el = item_element.select_one(".js-thumbnail-image")
         thumbnail_url = ""
-        if img_el:
-            original_url = img_el.get("data-src") or img_el.get("src") or ""
-            if original_url:
+        original_url = ""
+
+        if thumb_el:
+            original_url = thumb_el.get("data-original") or thumb_el.get("data-src") or ""
+        
+        # 2. なければ img タグ (ただしVRChatロゴなどを避けるため class 指定などを考慮)
+        if not original_url:
+            img_el = item_element.select_one("img")
+            if img_el:
+                original_url = img_el.get("data-src") or img_el.get("src") or ""
+
+        if original_url:
+            # VRChatバッジなどが紛れ込まないかチェック（簡易）
+            if "shops/badges" not in original_url:
                 # wsrv.nl経由で取得（Referer回避＆WebP変換）
                 thumbnail_url = f"https://wsrv.nl/?url={original_url}&output=webp"
 

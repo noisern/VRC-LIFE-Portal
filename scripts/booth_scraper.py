@@ -103,9 +103,57 @@ def parse_item(item_element) -> Optional[dict]:
         shop_el = item_element.select_one(".item-card__shop-name, [class*='shop-name']")
         shop_name = shop_el.get_text(strip=True) if shop_el else ""
 
-        # いいね数 (Unavailable in static HTML)
-        # We default to 0 because we cannot scrape it reliable from the search page anymore.
+        # いいね数 (Updated: Extract from search page)
         likes = 0
+        try:
+            # 1. Search for aria-label in buttons/links (e.g., "スキ！ 123", "Loves 456")
+            like_candidates = item_element.select("button[aria-label], a[aria-label], .js-like-btn, .like-count")
+            
+            # Also check text content of specific classes if aria-label is missing
+            # e.g. <span class="count">123</span>
+            like_candidates.extend(item_element.select(".count, .likes, .js-count"))
+            
+            found_likes = False
+            for el in like_candidates:
+                # Check aria-label first
+                label = el.get("aria-label", "")
+                if label:
+                    # Robust Regex: "Loves 123" -> 123
+                    matches = re.findall(r'\d+', label)
+                    if matches:
+                        likes = int(matches[0]) 
+                        found_likes = True
+                        break
+                
+                # Check text content
+                text = el.get_text(strip=True)
+                if text:
+                     matches = re.findall(r'\d+', text)
+                     if matches:
+                        likes = int(matches[0])
+                        found_likes = True
+                        break
+            
+            if not found_likes:
+                # Fallback: check raw text of the entire item card for "Loves N" pattern?
+                # Might be risky, but let's try if specific selectors fail
+                full_text = item_element.get_text(separator=" ", strip=True)
+                # Look for "Loves N" or "スキ！ N"
+                # This is a bit loose, so maybe only log it for now or rely on specific selectors
+                pass
+
+        except Exception as e:
+            logger.warning(f"Failed to parse likes: {e}")
+
+        if likes == 0:
+             # --- DEBUG: Dump Item Card HTML ---
+            try:
+                card_html = str(item_element)[:1000].replace("\n", " ") # First 1000 chars
+                logger.warning(f"  [DEBUG] Likes=0 for {booth_url}")
+                logger.warning(f"  [DEBUG] Item Card HTML: {card_html}")
+            except:
+                pass
+        # ------------------------------------
 
         # R18チェック
         # Use data-badge-params or check specific badge classes
@@ -140,145 +188,13 @@ def parse_item(item_element) -> Optional[dict]:
         return None
 
 
-def parse_likes_text(text: str) -> int:
-    """
-    スキ数テキスト（例: '1.5k', '1,200', 'スキ！50', 'Loves 123'）から数値を柔軟に抽出する。
-    最初に見つかった連続する数字（またはk/万）を抽出する。
-    """
-    if not text:
-        return 0
-    
-    text = text.lower().replace(",", "")
-    try:
-        # First, try to find a number with optional suffix (k/万)
-        # Regex: match digits, optionally with decimal, followed optionally by k or 万
-        # Examples: "123", "1.5k", "10万", "Loves 400" -> "400"
-        
-        # Extract the first valid number sequence
-        match = re.search(r'([\d\.]+)\s*(k|万)?', text)
-        if match:
-            num_str = match.group(1)
-            suffix = match.group(2)
-            
-            val = float(num_str)
-            
-            if suffix == 'k':
-                val *= 1000
-            elif suffix == '万':
-                val *= 10000
-                
-            return int(val)
-
-        return 0
-    except Exception as e:
-        logger.warning(f"Failed to parse likes text '{text}': {e}")
-        return 0
-
-def fetch_item_detail(booth_url: str, session: requests.Session) -> dict:
-    """
-    商品詳細ページから追加情報（説明文、スキ数）を取得する。
-    スキ数は以下の順で取得を試みる:
-    1. LD+JSON (interactionStatistic)
-    2. Button/Link attribute (aria-label, data-count) - Robust Regex
-    """
-    soup = fetch_page(booth_url, session)
-    if not soup:
-        return {}
-
-    detail = {}
-
-    # 説明文
-    desc_el = soup.select_one("[class*='description'], .js-market-item-detail-description")
-    if desc_el:
-        detail["description"] = desc_el.get_text(strip=True)[:500]
-
-    # いいね数 (Robust Extraction)
-    likes = 0
-    found_source = None
-    
-    # 1. LD+JSON
-    try:
-        ld_json_el = soup.select_one('script[type="application/ld+json"]')
-        if ld_json_el:
-            data = json.loads(ld_json_el.string)
-            if 'interactionStatistic' in data:
-                stats = data['interactionStatistic']
-                if isinstance(stats, list):
-                    for stat in stats:
-                        if stat.get('interactionType') == 'http://schema.org/LikeAction':
-                            likes = int(stat.get('userInteractionCount', 0))
-                            found_source = "LD+JSON"
-                            break
-                elif isinstance(stats, dict):
-                     if stats.get('interactionType') == 'http://schema.org/LikeAction':
-                        likes = int(stats.get('userInteractionCount', 0))
-                        found_source = "LD+JSON"
-    except Exception as e:
-        logger.debug(f"LD+JSON extraction failed: {e}")
-
-    # 2. Attribute Extraction (Targeting buttons/links with aria-label)
-    if not found_source:
-        # User requested: button[aria-label] or .js-like-btn[aria-label]
-        # We also check 'a' tags just in case
-        targets = soup.select("button[aria-label], a[aria-label], .js-like-btn")
-        
-        for el in targets:
-            label = el.get("aria-label", "")
-            if not label: 
-                continue
-            
-            # Regex: Extract ALL digit sequences, pick the first one
-            # e.g. "スキ！ 123" -> ["123"]
-            # e.g. "Loves 456" -> ["456"]
-            # e.g. "Like 789" -> ["789"]
-            matches = re.findall(r'\d+', label)
-            if matches:
-                # Potential candidate
-                # Heuristic: The number should be reasonable (e.g. not '2024' year if it's the only one, but usually likes count is distinct)
-                # For now, we take the *first* number found in a likely "like" button
-                
-                # Check if it looks like a like button
-                is_like_btn = False
-                class_str = " ".join(el.get("class", []))
-                if "like" in class_str or "wish" in class_str or "Like" in label or "スキ" in label or "Loves" in label:
-                     likes = int(matches[0])
-                     found_source = f"Attribute (aria-label='{label}')"
-                     break
-
-    if found_source:
-        detail["likes"] = likes
-    else:
-        logger.warning(f"Could not find likes for {booth_url} (Result: 0)")
-        
-        # --- DEBUG: Dump ALL aria-labels to log ---
-        try:
-            page_title = soup.title.string if soup.title else "No Title"
-            logger.warning(f"  [DEBUG] Page Title: {page_title}")
-            
-            all_aria_els = soup.select("[aria-label]")
-            if all_aria_els:
-                logger.warning(f"  [DEBUG] Found {len(all_aria_els)} elements with aria-label:")
-                for i, el in enumerate(all_aria_els):
-                    label = el.get("aria-label")
-                    tag_name = el.name
-                    classes = " ".join(el.get("class", []))
-                    logger.warning(f"    [{i}] <{tag_name} class='{classes}'> aria-label='{label}'")
-            else:
-                logger.warning("  [DEBUG] No elements with aria-label found.")
-
-        except Exception as e:
-            logger.warning(f"  [DEBUG] Failed to dump attributes: {e}")
-        # -----------------------------------------------
-
-        detail["likes"] = 0
-
-    return detail
+# Deleted fetch_item_detail as we are reverting to search page scraping 
 
 
 def scrape_booth(min_likes: int = 0, fetch_details: bool = False, dry_run: bool = False) -> list[dict]:
     """
     BOOTHからVRChat関連アイテムを収集する（全ページ走査）。
-    min_likes > 0 の場合、個別ページにアクセスしてスキ数を取得し、フィルタリングを行う。
+    min_likes > 0 の場合、検索結果から取得したスキ数でフィルタリングを行う。
     """
     if dry_run:
         logger.info("=== DRY RUN MODE ===")
@@ -334,14 +250,7 @@ def scrape_booth(min_likes: int = 0, fetch_details: bool = False, dry_run: bool 
                 # 重複チェック
                 if item["id"] not in seen_ids:
                     
-                    # 2. いいね数フィルタ (個別ページ取得)
-                    # min_likes指定がある場合、またはfetch_detailsがTrueの場合に詳細を取得
-                    if min_likes > 0 or fetch_details:
-                        if item["boothUrl"]:
-                            detail = fetch_item_detail(item["boothUrl"], session)
-                            item.update(detail) # likes, descriptionを更新
-                    
-                    # 詳細取得後のlikesでフィルタリング
+                    # 2. いいね数フィルタ (検索結果ページの値を使用)
                     current_likes = item.get("likes", 0)
                     if min_likes > 0 and current_likes < min_likes:
                          # Log why it was skipped to help debugging (sample first few failures)

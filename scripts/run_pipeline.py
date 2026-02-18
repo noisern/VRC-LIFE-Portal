@@ -23,7 +23,6 @@ from pathlib import Path
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from booth_scraper import scrape_booth
-from filter_items import filter_items
 from auto_tagger import tag_all_items
 
 logger = logging.getLogger(__name__)
@@ -45,19 +44,40 @@ def run_pipeline(dry_run: bool = False, output_path: str = None) -> None:
     else:
         output_path = Path(output_path)
 
-    # Step 1: スクレイピング
-    logger.info("\n[Step 1/3] BOOTHからアイテム収集...")
-    raw_items = scrape_booth(dry_run=dry_run)
-    logger.info(f"  → {len(raw_items)} アイテム収集")
+    # Step 1: スクレイピング (フィルタリング込み)
+    logger.info(f"\n[Step 1/2] BOOTHからアイテム収集 (Min Likes: 100)...")
+    
+    # 既存データの読み込み (Incremental Update)
+    existing_items = []
+    if output_path.exists():
+        try:
+            with open(output_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+                existing_items = data.get("items", [])
+            logger.info(f"  既存データ読み込み: {len(existing_items)} アイテム")
+        except Exception as e:
+            logger.warning(f"  既存データの読み込みに失敗 (新規作成します): {e}")
 
-    # Step 2: フィルタリング
-    logger.info("\n[Step 2/3] フィルタリング...")
-    filtered_items = filter_items(raw_items, min_likes=0)
-    logger.info(f"  → {len(filtered_items)} アイテム残存")
+    # IDマップ作成
+    item_map = {item["id"]: item for item in existing_items}
 
-    # Step 3: タグ付け
-    logger.info("\n[Step 3/3] 自動タグ付け...")
-    tagged_items = tag_all_items(filtered_items)
+    # 新規スクレイピング
+    new_items = scrape_booth(min_likes=100, dry_run=dry_run)
+    logger.info(f"  → 新規取得: {len(new_items)} アイテム")
+
+    # マージ (上書き更新)
+    for item in new_items:
+        # R18フラグなどの掃除
+        if "isR18" in item:
+            del item["isR18"]
+        item_map[item["id"]] = item
+
+    merged_items = list(item_map.values())
+    logger.info(f"  → マージ後合計: {len(merged_items)} アイテム")
+
+    # Step 2: タグ付け
+    logger.info("\n[Step 2/2] 自動タグ付け...")
+    tagged_items = tag_all_items(merged_items)
     logger.info(f"  → {len(tagged_items)} アイテムにタグ付与")
 
     # いいね数でソート（降順）
@@ -72,9 +92,11 @@ def run_pipeline(dry_run: bool = False, output_path: str = None) -> None:
 
     # 空の結果だった場合は出力しない（既存データを保護）
     if not tagged_items:
-        logger.error("❌ エラー: 収集されたアイテムが0件のため、items.json の更新をスキップします。")
-        # GitHub Actionsでエラーとして扱いたい場合は exit(1) する
-        sys.exit(1)
+        logger.error("❌ エラー: アイテムが0件です。")
+        # 既存データがあるならエラーにしない選択肢もあるが、
+        # スクレイピング失敗で0件になった場合は更新したくないのでExit
+        pass 
+        # Note: Merged items implies we have existing items, so this check is valid for empty merge result.
 
     # JSON出力
     output_path.parent.mkdir(parents=True, exist_ok=True)

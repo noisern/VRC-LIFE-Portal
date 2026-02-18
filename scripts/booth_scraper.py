@@ -13,6 +13,7 @@ from bs4 import BeautifulSoup
 import json
 import re
 import time
+import random
 import logging
 from datetime import datetime, timezone
 from typing import Optional
@@ -20,13 +21,8 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 # === マナー設定 ===
-USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-REQUEST_DELAY = 3  # seconds between requests
-MAX_PAGES = 5
-
-# BOOTH search URLs for VRChat items
-# BOOTH search URLs for VRChat items
-# SEARCH_URLS removed - using local definition in scrape_booth to handle labels better
+USER_AGENT = "VRC-LIFE Portal Bot"
+# REQUEST_DELAY will be randomized
 
 HEADERS = {
     "User-Agent": USER_AGENT,
@@ -41,7 +37,10 @@ def fetch_page(url: str, session: requests.Session) -> Optional[BeautifulSoup]:
         logger.info(f"Fetching: {url}")
         response = session.get(url, headers=HEADERS, timeout=30)
         response.raise_for_status()
-        time.sleep(REQUEST_DELAY)
+        
+        # Random sleep 1-3 seconds
+        time.sleep(1 + 2 * __import__("random").random())
+        
         return BeautifulSoup(response.text, "html.parser")
     except requests.RequestException as e:
         logger.error(f"Failed to fetch {url}: {e}")
@@ -74,15 +73,12 @@ def parse_item(item_element) -> Optional[dict]:
         price = int("".join(c for c in price_text if c.isdigit()) or "0")
 
         # サムネイル
-        # 1. .js-thumbnail-image (background-image or data-original) を優先
         thumb_el = item_element.select_one(".js-thumbnail-image")
         thumbnail_url = ""
         original_url = ""
 
         if thumb_el:
             original_url = thumb_el.get("data-original") or thumb_el.get("data-src") or thumb_el.get("src") or ""
-            
-            # Fallback: extract from background-image style if attribute missing
             if not original_url:
                 style = thumb_el.get("style", "")
                 if style:
@@ -90,23 +86,16 @@ def parse_item(item_element) -> Optional[dict]:
                     if match:
                         original_url = match.group(1)
         
-        # 2. なければ img タグ (ただしVRChatロゴなどを避けるため class 指定などを考慮)
         if not original_url:
             img_el = item_element.select_one("img")
             if img_el:
                 original_url = img_el.get("data-src") or img_el.get("src") or ""
 
         if original_url:
-            # VRChatバッジなどが紛れ込まないかチェック（簡易）
             if "shops/badges" not in original_url:
-                # 直リンクを使用（HTML側で <meta name="referrer" content="no-referrer"> が必要）
                 thumbnail_url = original_url
             else:
-                pass # logging.debug(f"Skipped badge image: {original_url}")
-        else:
-             # Debug log for missing images (temporary)
-             # logger.warning(f"No image found for item {item_id}: HTML sample: {item_element.prettify()[:200]}")
-             pass
+                pass
 
         # ショップ名
         shop_el = item_element.select_one("[class*='shop-name'], .shop-item-card__shop-name")
@@ -117,12 +106,11 @@ def parse_item(item_element) -> Optional[dict]:
         likes_text = likes_el.get_text(strip=True) if likes_el else "0"
         likes = int("".join(c for c in likes_text if c.isdigit()) or "0")
 
-        # R18チェック
+        # R18チェック (予備的)
         is_r18 = False
         r18_el = item_element.select_one("[class*='adult'], [class*='r18'], .badge-adult")
         if r18_el:
             is_r18 = True
-        # テキストにR-18やR18が含まれているか
         full_text = item_element.get_text()
         if "R-18" in full_text or "R18" in full_text or "成人向け" in full_text:
             is_r18 = True
@@ -139,7 +127,7 @@ def parse_item(item_element) -> Optional[dict]:
             "thumbnailUrl": thumbnail_url,
             "likes": likes,
             "isR18": is_r18,
-            "description": "",  # 詳細ページから取得する場合に使用
+            "description": "",
             "fetchedAt": datetime.now(timezone.utc).isoformat(),
         }
     except Exception as e:
@@ -158,9 +146,9 @@ def fetch_item_detail(booth_url: str, session: requests.Session) -> dict:
     # 説明文
     desc_el = soup.select_one("[class*='description'], .js-market-item-detail-description")
     if desc_el:
-        detail["description"] = desc_el.get_text(strip=True)[:500]  # 500文字まで
+        detail["description"] = desc_el.get_text(strip=True)[:500]
 
-    # いいね数（詳細ページからの方が正確）
+    # いいね数
     likes_el = soup.select_one("[class*='wish-list-counter'], .js-like-count")
     if likes_el:
         likes_text = likes_el.get_text(strip=True)
@@ -170,16 +158,9 @@ def fetch_item_detail(booth_url: str, session: requests.Session) -> dict:
     return detail
 
 
-def scrape_booth(fetch_details: bool = False, dry_run: bool = False) -> list[dict]:
+def scrape_booth(min_likes: int = 100, fetch_details: bool = False, dry_run: bool = False) -> list[dict]:
     """
-    BOOTHからVRChat関連アイテムを収集する。
-
-    Args:
-        fetch_details: 商品詳細ページも取得するか（負荷注意）
-        dry_run: True の場合、HTTPリクエストを行わずサンプルデータを返す
-
-    Returns:
-        収集されたアイテムのリスト
+    BOOTHからVRChat関連アイテムを収集する（全ページ走査）。
     """
     if dry_run:
         logger.info("=== DRY RUN MODE ===")
@@ -189,7 +170,7 @@ def scrape_booth(fetch_details: bool = False, dry_run: bool = False) -> list[dic
     all_items = []
     seen_ids = set()
 
-    # BOOTH search URLs for VRChat items (Use generic search to avoid 404 on browse)
+    # BOOTH search URLs for VRChat items
     SEARCH_URLS = [
         {"url": "https://booth.pm/ja/search/VRChat?sort=popular", "label": "VRChat全般"},
         {"url": "https://booth.pm/ja/search/3D%E8%A1%A3%E8%A3%85?sort=popular", "label": "3D衣装"},
@@ -197,18 +178,14 @@ def scrape_booth(fetch_details: bool = False, dry_run: bool = False) -> list[dic
         {"url": "https://booth.pm/ja/search/3D%E5%B0%8F%E7%89%A9?sort=popular", "label": "3D小物"},
     ]
 
-    session = requests.Session()
-    all_items = []
-    seen_ids = set()
-    debug_html_dumped = False  # To dump HTML only once
-
     for category in SEARCH_URLS:
         logger.info(f"\n--- カテゴリ: {category['label']} ---")
-
-        for page in range(1, MAX_PAGES + 1):
+        page = 1
+        
+        while True:
             page_url = f"{category['url']}&page={page}"
-
             soup = fetch_page(page_url, session)
+            
             if not soup:
                 break
 
@@ -218,25 +195,41 @@ def scrape_booth(fetch_details: bool = False, dry_run: bool = False) -> list[dic
             )
 
             if not item_elements:
-                logger.warning(f"  ページ {page}: アイテムなし")
-                if soup.title:
-                    logger.info(f"  Page Title: {soup.title.string.strip()}")
+                logger.info(f"  ページ {page}: アイテムなし (終了)")
                 break
 
-            logger.info(f"  ページ {page}: {len(item_elements)} アイテム検出")
-
+            processed_count_in_page = 0
+            
             for el in item_elements:
                 item = parse_item(el)
                 
-                if item and item["id"] not in seen_ids:
-                    seen_ids.add(item["id"])
+                if not item:
+                    continue
 
-                    # 詳細ページからの追加情報
+                # --- 厳格なフィルタリング ---
+                # 1. R18除外
+                if item["isR18"]:
+                    continue
+                
+                # 2. いいね数フィルタ
+                if item["likes"] < min_likes:
+                    continue
+                
+                # 重複チェック
+                if item["id"] not in seen_ids:
+                    seen_ids.add(item["id"])
+                    
+                    # 詳細ページ取得（必要な場合のみ）
                     if fetch_details and item["boothUrl"]:
                         detail = fetch_item_detail(item["boothUrl"], session)
                         item.update(detail)
-
+                    
                     all_items.append(item)
+                    processed_count_in_page += 1
+
+            logger.info(f"  ページ {page}: 有効アイテム {processed_count_in_page}件 (累計: {len(all_items)}件)")
+            
+            page += 1
 
     logger.info(f"\n=== 合計 {len(all_items)} アイテム収集完了 ===")
     return all_items

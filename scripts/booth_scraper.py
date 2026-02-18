@@ -19,7 +19,7 @@ from typing import Optional
 logger = logging.getLogger(__name__)
 
 # === マナー設定 ===
-USER_AGENT = "VRC-LIFE Portal Bot (https://vrc-life-portal.example.com; contact@vrc-life-portal.example.com)"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
 REQUEST_DELAY = 3  # seconds between requests
 MAX_PAGES = 5
 

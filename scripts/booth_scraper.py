@@ -24,13 +24,8 @@ REQUEST_DELAY = 3  # seconds between requests
 MAX_PAGES = 5
 
 # BOOTH search URLs for VRChat items
-SEARCH_URLS = [
-    "https://booth.pm/ja/search/VRChat?sort=popular&page={}",
-    "https://booth.pm/ja/browse/3D%E8%A1%A3%E8%A3%85?q=VRChat&sort=popular&page={}",
-    "https://booth.pm/ja/browse/3D%E3%82%AD%E3%83%A3%E3%83%A9%E3%82%AF%E3%82%BF%E3%83%BC?q=VRChat&sort=popular&page={}",
-    # 3Dアクセサリー (URL修正)
-    "https://booth.pm/ja/browse/3D%E5%B0%8F%E7%89%A9?q=VRChat&sort=popular&page={}",
-]
+# BOOTH search URLs for VRChat items
+# SEARCH_URLS removed - using local definition in scrape_booth to handle labels better
 
 HEADERS = {
     "User-Agent": USER_AGENT,
@@ -167,18 +162,24 @@ def scrape_booth(fetch_details: bool = False, dry_run: bool = False) -> list[dic
     all_items = []
     seen_ids = set()
 
-    for i, search_url_base in enumerate(SEARCH_URLS):
-        category_label = [
-            "VRChat全般",
-            "3D衣装",
-            "3Dキャラクター",
-            "3D小物"
-        ][i]
-        
-        logger.info(f"\n--- カテゴリ: {category_label} ---")
+    # BOOTH search URLs for VRChat items (Use generic search to avoid 404 on browse)
+    SEARCH_URLS = [
+        {"url": "https://booth.pm/ja/search/VRChat?sort=popular", "label": "VRChat全般"},
+        {"url": "https://booth.pm/ja/search/3D%E8%A1%A3%E8%A3%85?sort=popular", "label": "3D衣装"},
+        {"url": "https://booth.pm/ja/search/3D%E3%82%AD%E3%83%A3%E3%83%A9%E3%82%AF%E3%82%BF%E3%83%BC?sort=popular", "label": "3Dキャラクター"},
+        {"url": "https://booth.pm/ja/search/3D%E5%B0%8F%E7%89%A9?sort=popular", "label": "3D小物"},
+    ]
+
+    session = requests.Session()
+    all_items = []
+    seen_ids = set()
+    debug_html_dumped = False  # To dump HTML only once
+
+    for category in SEARCH_URLS:
+        logger.info(f"\n--- カテゴリ: {category['label']} ---")
 
         for page in range(1, MAX_PAGES + 1):
-            page_url = search_url_base.format(page)
+            page_url = f"{category['url']}&page={page}"
 
             soup = fetch_page(page_url, session)
             if not soup:
@@ -193,13 +194,19 @@ def scrape_booth(fetch_details: bool = False, dry_run: bool = False) -> list[dic
                 logger.warning(f"  ページ {page}: アイテムなし")
                 if soup.title:
                     logger.info(f"  Page Title: {soup.title.string.strip()}")
-                logger.info(f"  Page Preview: {soup.prettify()[:500]}")
                 break
 
             logger.info(f"  ページ {page}: {len(item_elements)} アイテム検出")
 
             for el in item_elements:
                 item = parse_item(el)
+                
+                # Debug logging for 0 likes
+                if item and item.get("likes", 0) == 0 and not debug_html_dumped:
+                     logger.warning("Found item with 0 likes. Dumping HTML for debugging:")
+                     logger.warning(el.prettify()[:1000]) # First 1000 chars
+                     debug_html_dumped = True
+
                 if item and item["id"] not in seen_ids:
                     seen_ids.add(item["id"])
 

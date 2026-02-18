@@ -240,6 +240,23 @@ def fetch_item_detail(booth_url: str, session: requests.Session) -> dict:
         detail["likes"] = likes
     else:
         logger.warning(f"Could not find likes for {booth_url} (Result: 0)")
+        
+        # --- DEBUG: Dump 'Loves' related HTML to log ---
+        # limits to first few checks to avoid log spam, handled by caller or assumed occasional
+        try:
+            loves_nodes = soup.find_all(string=re.compile("Loves|Like|スキ", re.I))
+            if loves_nodes:
+                logger.warning(f"  [DEBUG] Found 'Loves/Like/スキ' text nodes in {booth_url}:")
+                for i, node in enumerate(loves_nodes[:3]): # Show first 3 matches
+                    parent = node.parent
+                    snippet = str(parent)[:200].replace("\n", " ") # First 200 chars of parent HTML
+                    logger.warning(f"    Match {i+1}: ...{snippet}...")
+            else:
+                logger.warning(f"  [DEBUG] No 'Loves/Like/スキ' text found on page.")
+        except Exception as e:
+            logger.warning(f"  [DEBUG] Failed to dump HTML: {e}")
+        # -----------------------------------------------
+
         detail["likes"] = 0
 
     return detail

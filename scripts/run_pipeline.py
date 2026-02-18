@@ -45,6 +45,7 @@ def run_pipeline(dry_run: bool = False, output_path: str = None) -> None:
         output_path = Path(output_path)
 
     # Step 1: スクレイピング (フィルタリング込み)
+    # Step 1: スクレイピング (フィルタリング込み)
     logger.info(f"\n[Step 1/2] BOOTHからアイテム収集 (Min Likes: 100)...")
     
     # 既存データの読み込み (Incremental Update)

@@ -51,7 +51,8 @@ def parse_item(item_element) -> Optional[dict]:
     """商品要素から情報を抽出する。"""
     try:
         # 商品リンク
-        link_el = item_element.select_one("a[href*='/items/']")
+        # Selector for the link usually wraps the title or is specific
+        link_el = item_element.select_one("a[href*='/items/'], a.item-card__title-anchor--multiline")
         if not link_el:
             return None
         booth_url = link_el.get("href", "")
@@ -60,60 +61,64 @@ def parse_item(item_element) -> Optional[dict]:
 
         # 商品ID
         item_id = ""
-        if "/items/" in booth_url:
-            item_id = "booth-" + booth_url.split("/items/")[-1].split("?")[0].split("/")[0]
+        # Try to extract ID from URL
+        match = re.search(r'/items/(\d+)', booth_url)
+        if match:
+            item_id = "booth-" + match.group(1)
+        else:
+            return None # ID is required
 
         # 商品名
-        name_el = item_element.select_one("[class*='item-card__title'], .shop-item-card__item-name, h2, h3")
+        # Use verified selector from booth_popular.html
+        name_el = item_element.select_one("a.item-card__title-anchor--multiline, [class*='item-card__title'], .shop-item-card__item-name")
         name = name_el.get_text(strip=True) if name_el else ""
 
         # 価格
-        price_el = item_element.select_one("[class*='price'], .shop-item-card__price")
+        # Verified selector: .price
+        price_el = item_element.select_one(".price, [class*='price'], .shop-item-card__price")
         price_text = price_el.get_text(strip=True) if price_el else "0"
         price = int("".join(c for c in price_text if c.isdigit()) or "0")
 
         # サムネイル
-        thumb_el = item_element.select_one(".js-thumbnail-image")
+        # Verified: item-card__thumbnail-image with style or data-original
+        thumb_el = item_element.select_one(".item-card__thumbnail-image, .js-thumbnail-image")
         thumbnail_url = ""
-        original_url = ""
-
+        
         if thumb_el:
-            original_url = thumb_el.get("data-original") or thumb_el.get("data-src") or thumb_el.get("src") or ""
-            if not original_url:
+            thumbnail_url = thumb_el.get("data-original") or thumb_el.get("data-src") or thumb_el.get("src") or ""
+            if not thumbnail_url:
                 style = thumb_el.get("style", "")
                 if style:
                     match = re.search(r"url\(['\"]?([^'\")]+)['\"]?\)", style)
                     if match:
-                        original_url = match.group(1)
+                        thumbnail_url = match.group(1)
         
-        if not original_url:
+        if not thumbnail_url:
             img_el = item_element.select_one("img")
             if img_el:
-                original_url = img_el.get("data-src") or img_el.get("src") or ""
-
-        if original_url:
-            if "shops/badges" not in original_url:
-                thumbnail_url = original_url
-            else:
-                pass
+                thumbnail_url = img_el.get("data-src") or img_el.get("src") or ""
 
         # ショップ名
-        shop_el = item_element.select_one("[class*='shop-name'], .shop-item-card__shop-name")
+        # Verified: .item-card__shop-name
+        shop_el = item_element.select_one(".item-card__shop-name, [class*='shop-name']")
         shop_name = shop_el.get_text(strip=True) if shop_el else ""
 
-        # いいね数
-        likes_el = item_element.select_one("[class*='wish-list-counter'], [class*='like'], .js-like-count")
-        likes_text = likes_el.get_text(strip=True) if likes_el else "0"
-        likes = int("".join(c for c in likes_text if c.isdigit()) or "0")
+        # いいね数 (Unavailable in static HTML)
+        # We default to 0 because we cannot scrape it reliable from the search page anymore.
+        likes = 0
 
-        # R18チェック (予備的)
+        # R18チェック
+        # Use data-badge-params or check specific badge classes
         is_r18 = False
-        r18_el = item_element.select_one("[class*='adult'], [class*='r18'], .badge-adult")
+        r18_el = item_element.select_one(".badge-adult, .is-adult, .r18-badge")
         if r18_el:
             is_r18 = True
-        full_text = item_element.get_text()
-        if "R-18" in full_text or "R18" in full_text or "成人向け" in full_text:
-            is_r18 = True
+        
+        # Fallback check on text content if badge is missing but text says R18
+        if not is_r18:
+            full_text = item_element.get_text()
+            if "R-18" in full_text or "成人向け" in full_text:
+                is_r18 = True
 
         if not name or not item_id:
             return None
@@ -135,8 +140,48 @@ def parse_item(item_element) -> Optional[dict]:
         return None
 
 
+def parse_likes_text(text: str) -> int:
+    """
+    スキ数テキスト（例: '1.5k', '1,200', 'スキ！50', 'Loves 123'）から数値を柔軟に抽出する。
+    最初に見つかった連続する数字（またはk/万）を抽出する。
+    """
+    if not text:
+        return 0
+    
+    text = text.lower().replace(",", "")
+    try:
+        # First, try to find a number with optional suffix (k/万)
+        # Regex: match digits, optionally with decimal, followed optionally by k or 万
+        # Examples: "123", "1.5k", "10万", "Loves 400" -> "400"
+        
+        # Extract the first valid number sequence
+        match = re.search(r'([\d\.]+)\s*(k|万)?', text)
+        if match:
+            num_str = match.group(1)
+            suffix = match.group(2)
+            
+            val = float(num_str)
+            
+            if suffix == 'k':
+                val *= 1000
+            elif suffix == '万':
+                val *= 10000
+                
+            return int(val)
+
+        return 0
+    except Exception as e:
+        logger.warning(f"Failed to parse likes text '{text}': {e}")
+        return 0
+
 def fetch_item_detail(booth_url: str, session: requests.Session) -> dict:
-    """商品詳細ページから追加情報（説明文）を取得する。"""
+    """
+    商品詳細ページから追加情報（説明文、スキ数）を取得する。
+    スキ数は以下の順で取得を試みる:
+    1. LD+JSON (interactionStatistic)
+    2. CSS Selector (.js-like-count, .wish-list-counter)
+    3. aria-label ("スキ！N")
+    """
     soup = fetch_page(booth_url, session)
     if not soup:
         return {}
@@ -148,19 +193,62 @@ def fetch_item_detail(booth_url: str, session: requests.Session) -> dict:
     if desc_el:
         detail["description"] = desc_el.get_text(strip=True)[:500]
 
-    # いいね数
-    likes_el = soup.select_one("[class*='wish-list-counter'], .js-like-count")
-    if likes_el:
-        likes_text = likes_el.get_text(strip=True)
-        likes = int("".join(c for c in likes_text if c.isdigit()) or "0")
+    # いいね数 (Robust Extraction)
+    likes = 0
+    found_source = None
+    raw_text = ""
+
+    # 1. LD+JSON
+    try:
+        ld_json_el = soup.select_one('script[type="application/ld+json"]')
+        if ld_json_el:
+            data = json.loads(ld_json_el.string)
+            # Check interactionStatistic for UserInteraction (likes)
+            if 'interactionStatistic' in data:
+                stats = data['interactionStatistic']
+                if isinstance(stats, list):
+                    for stat in stats:
+                        if stat.get('interactionType') == 'http://schema.org/LikeAction':
+                            likes = int(stat.get('userInteractionCount', 0))
+                            found_source = "LD+JSON"
+                            break
+                elif isinstance(stats, dict):
+                     if stats.get('interactionType') == 'http://schema.org/LikeAction':
+                        likes = int(stats.get('userInteractionCount', 0))
+                        found_source = "LD+JSON"
+    except Exception as e:
+        logger.debug(f"LD+JSON extraction failed: {e}")
+
+    # 2. CSS Selectors (Fallback)
+    if not found_source:
+        likes_el = soup.select_one(".js-like-count, .wish-list-counter, .like-count")
+        if likes_el:
+            raw_text = likes_el.get_text(strip=True)
+            likes = parse_likes_text(raw_text)
+            found_source = f"CSS Selector (text: {raw_text})"
+
+    # 3. Aria-label (Fallback)
+    if not found_source:
+        aria_el = soup.select_one('[aria-label*="スキ"], [aria-label*="Like"], [aria-label*="Loves"]')
+        if aria_el:
+            raw_text = aria_el.get("aria-label", "")
+            likes = parse_likes_text(raw_text)
+            found_source = f"Aria Label (text: {raw_text})"
+
+    if found_source:
+        # logger.debug(f"Found likes for {booth_url}: {likes} (Source: {found_source})")
         detail["likes"] = likes
+    else:
+        logger.warning(f"Could not find likes for {booth_url} (Result: 0)")
+        detail["likes"] = 0
 
     return detail
 
 
-def scrape_booth(min_likes: int = 100, fetch_details: bool = False, dry_run: bool = False) -> list[dict]:
+def scrape_booth(min_likes: int = 0, fetch_details: bool = False, dry_run: bool = False) -> list[dict]:
     """
     BOOTHからVRChat関連アイテムを収集する（全ページ走査）。
+    min_likes > 0 の場合、個別ページにアクセスしてスキ数を取得し、フィルタリングを行う。
     """
     if dry_run:
         logger.info("=== DRY RUN MODE ===")
@@ -170,9 +258,10 @@ def scrape_booth(min_likes: int = 100, fetch_details: bool = False, dry_run: boo
     all_items = []
     seen_ids = set()
 
-    # BOOTH search URLs for VRChat items
+    # BOOTH search URLs for VRChat items - Forced to 'popular' sort
     SEARCH_URLS = [
         {"url": "https://booth.pm/ja/search/VRChat?sort=popular", "label": "VRChat全般"},
+        # Limit categories for debug speed if needed, but keeping full list for now
         {"url": "https://booth.pm/ja/search/3D%E8%A1%A3%E8%A3%85?sort=popular", "label": "3D衣装"},
         {"url": "https://booth.pm/ja/search/3D%E3%82%AD%E3%83%A3%E3%83%A9%E3%82%AF%E3%82%BF%E3%83%BC?sort=popular", "label": "3Dキャラクター"},
         {"url": "https://booth.pm/ja/search/3D%E5%B0%8F%E7%89%A9?sort=popular", "label": "3D小物"},
@@ -191,7 +280,7 @@ def scrape_booth(min_likes: int = 100, fetch_details: bool = False, dry_run: boo
 
             # アイテムカードを検索
             item_elements = soup.select(
-                "[class*='item-card'], .shop-item-card, [data-tracking-name='items']"
+                "li.item-card, .shop-item-card, [data-tracking-name='items']"
             )
 
             if not item_elements:
@@ -209,26 +298,38 @@ def scrape_booth(min_likes: int = 100, fetch_details: bool = False, dry_run: boo
                 # --- 厳格なフィルタリング ---
                 # 1. R18除外
                 if item["isR18"]:
-                    continue
-                
-                # 2. いいね数フィルタ
-                if item["likes"] < min_likes:
+                    # logger.info(f"Skipping R18: {item['name']}")
                     continue
                 
                 # 重複チェック
                 if item["id"] not in seen_ids:
+                    
+                    # 2. いいね数フィルタ (個別ページ取得)
+                    # min_likes指定がある場合、またはfetch_detailsがTrueの場合に詳細を取得
+                    if min_likes > 0 or fetch_details:
+                        if item["boothUrl"]:
+                            detail = fetch_item_detail(item["boothUrl"], session)
+                            item.update(detail) # likes, descriptionを更新
+                    
+                    # 詳細取得後のlikesでフィルタリング
+                    current_likes = item.get("likes", 0)
+                    if min_likes > 0 and current_likes < min_likes:
+                         # Log why it was skipped to help debugging (sample first few failures)
+                         # logger.info(f"Skipping low likes ({current_likes}): {item['name']}")
+                         continue
+
+                    # 採用
                     seen_ids.add(item["id"])
-                    
-                    # 詳細ページ取得（必要な場合のみ）
-                    if fetch_details and item["boothUrl"]:
-                        detail = fetch_item_detail(item["boothUrl"], session)
-                        item.update(detail)
-                    
                     all_items.append(item)
                     processed_count_in_page += 1
 
-            logger.info(f"  ページ {page}: 有効アイテム {processed_count_in_page}件 (累計: {len(all_items)}件)")
+            logger.info(f"  ページ {page}: 有効アイテム {processed_count_in_page}件 / 候補 {len(item_elements)}件 (累計: {len(all_items)}件)")
             
+            # Limit to 50 pages
+            if page > 50:
+                 logger.info("  ページ上限到達 (50ページ)")
+                 break
+
             page += 1
 
     logger.info(f"\n=== 合計 {len(all_items)} アイテム収集完了 ===")

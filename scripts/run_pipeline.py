@@ -81,8 +81,12 @@ def run_pipeline(dry_run: bool = False, output_path: str = None) -> None:
     tagged_items = tag_all_items(merged_items)
     logger.info(f"  → {len(tagged_items)} アイテムにタグ付与")
 
-    # いいね数でソート（降順）
-    tagged_items.sort(key=lambda x: x.get("likes", 0), reverse=True)
+    # ID（実質的な投稿順）でソート（降順）
+    try:
+        tagged_items.sort(key=lambda x: int(x["id"].replace("booth-", "")), reverse=True)
+    except Exception as e:
+        logger.warning(f"IDソートに失敗しました（likes順にフォールバックします）: {e}")
+        tagged_items.sort(key=lambda x: x.get("likes", 0), reverse=True)
 
     # 出力データ構築
     output_data = {

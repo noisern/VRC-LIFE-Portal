@@ -9,7 +9,7 @@ BOOTHの2026年1月27日改定ガイドラインに準拠:
 """
 
 import requests
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, Tag
 import json
 import re
 import time
@@ -47,126 +47,117 @@ def fetch_page(url: str, session: requests.Session) -> Optional[BeautifulSoup]:
         return None
 
 
-def parse_item(item_element) -> Optional[dict]:
-    """商品要素から情報を抽出する。"""
+def parse_item(item_element: Tag) -> Optional[dict]:
+    """
+    HTML要素からアイテム情報を抽出する。
+    User Request V2: Use specific data attributes and robust regex.
+    """
     try:
-        # 商品リンク
-        # Selector for the link usually wraps the title or is specific
-        link_el = item_element.select_one("a[href*='/items/'], a.item-card__title-anchor--multiline")
-        if not link_el:
-            return None
-        booth_url = link_el.get("href", "")
-        if not booth_url.startswith("http"):
-            booth_url = "https://booth.pm" + booth_url
-
-        # 商品ID
-        item_id = ""
-        # Try to extract ID from URL
-        match = re.search(r'/items/(\d+)', booth_url)
-        if match:
-            item_id = "booth-" + match.group(1)
-        else:
-            return None # ID is required
-
-        # 商品名
-        # Use verified selector from booth_popular.html
-        name_el = item_element.select_one("a.item-card__title-anchor--multiline, [class*='item-card__title'], .shop-item-card__item-name")
-        name = name_el.get_text(strip=True) if name_el else ""
-
-        # 価格
-        # Verified selector: .price
-        price_el = item_element.select_one(".price, [class*='price'], .shop-item-card__price")
-        price_text = price_el.get_text(strip=True) if price_el else "0"
-        price = int("".join(c for c in price_text if c.isdigit()) or "0")
-
-        # サムネイル
-        # Verified: item-card__thumbnail-image with style or data-original
-        thumb_el = item_element.select_one(".item-card__thumbnail-image, .js-thumbnail-image")
-        thumbnail_url = ""
+        # 1. Get Basic Info from Attributes (Reliable)
+        # item_element is likely 'li.item-card'
+        name = item_element.get("data-product-name")
+        price_str = item_element.get("data-product-price")
+        item_id = item_element.get("data-product-id")
+        shop_name = item_element.get("data-product-brand")
         
-        if thumb_el:
-            thumbnail_url = thumb_el.get("data-original") or thumb_el.get("data-src") or thumb_el.get("src") or ""
-            if not thumbnail_url:
-                style = thumb_el.get("style", "")
-                if style:
-                    match = re.search(r"url\(['\"]?([^'\")]+)['\"]?\)", style)
-                    if match:
-                        thumbnail_url = match.group(1)
+        # Fallback if attributes missing (e.g. structure changed, but attributes are requested primary)
+        if not name:
+             title_el = item_element.select_one(".item-card__title, .js-mount-point-shop-item-card-title")
+             if title_el: name = title_el.get_text(strip=True)
         
-        if not thumbnail_url:
-            img_el = item_element.select_one("img")
-            if img_el:
-                thumbnail_url = img_el.get("data-src") or img_el.get("src") or ""
+        if not item_id:
+             # Try ID from URL
+             link = item_element.select_one("a[href*='/items/']")
+             if link:
+                 href = link.get("href")
+                 match = re.search(r'/items/(\d+)', href)
+                 if match: item_id = match.group(1)
 
-        # ショップ名
-        # Verified: .item-card__shop-name
-        shop_el = item_element.select_one(".item-card__shop-name, [class*='shop-name']")
-        shop_name = shop_el.get_text(strip=True) if shop_el else ""
-
-        # いいね数 (Updated: Extract from search page)
-        likes = 0
-        try:
-            # 1. Search for aria-label in buttons/links (e.g., "スキ！ 123", "Loves 456")
-            like_candidates = item_element.select("button[aria-label], a[aria-label], .js-like-btn, .like-count")
-            
-            # Also check text content of specific classes if aria-label is missing
-            # e.g. <span class="count">123</span>
-            like_candidates.extend(item_element.select(".count, .likes, .js-count"))
-            
-            found_likes = False
-            for el in like_candidates:
-                # Check aria-label first
-                label = el.get("aria-label", "")
-                if label:
-                    # Robust Regex: "Loves 123" -> 123
-                    matches = re.findall(r'\d+', label)
-                    if matches:
-                        likes = int(matches[0]) 
-                        found_likes = True
-                        break
-                
-                # Check text content
-                text = el.get_text(strip=True)
-                if text:
-                     matches = re.findall(r'\d+', text)
-                     if matches:
-                        likes = int(matches[0])
-                        found_likes = True
-                        break
-            
-            if not found_likes:
-                # Fallback: check raw text of the entire item card for "Loves N" pattern?
-                # Might be risky, but let's try if specific selectors fail
-                full_text = item_element.get_text(separator=" ", strip=True)
-                # Look for "Loves N" or "スキ！ N"
-                # This is a bit loose, so maybe only log it for now or rely on specific selectors
-                pass
-
-        except Exception as e:
-            logger.warning(f"Failed to parse likes: {e}")
-
-        if likes == 0:
-             # --- DEBUG: Dump Item Card HTML ---
+        # Price parsing
+        price = 0
+        if price_str:
             try:
-                card_html = str(item_element)[:1000].replace("\n", " ") # First 1000 chars
-                logger.warning(f"  [DEBUG] Likes=0 for {booth_url}")
-                logger.warning(f"  [DEBUG] Item Card HTML: {card_html}")
+                price = int(float(price_str))
             except:
                 pass
-        # ------------------------------------
+        else:
+             price_el = item_element.select_one(".price, .item-card__price")
+             if price_el:
+                 p_text = price_el.get_text(strip=True).replace(",", "").replace("¥", "")
+                 match = re.search(r'\d+', p_text)
+                 if match: price = int(match.group(0))
+
+        # URL & Thumbnail
+        booth_url = ""
+        thumbnail_url = ""
+        
+        link_el = item_element.select_one("a[data-original-url]")
+        if link_el:
+             booth_url = link_el.get("href") # usually relative or absolute? check
+             if booth_url and not booth_url.startswith("http"):
+                 booth_url = f"https://booth.pm{booth_url}"
+        else:
+             # Standard link check
+             link_el = item_element.select_one("a[href*='/items/']")
+             if link_el:
+                 booth_url = link_el.get("href")
+                 if not booth_url.startswith("http"):
+                     booth_url = f"https://booth.pm{booth_url}"
+
+        thumb_el = item_element.select_one("img[src*='user_assets'], img.item-card__thumbnail-image")
+        if thumb_el:
+            thumbnail_url = thumb_el.get("data-original") or thumb_el.get("src") or ""
+
+        # 2. Get Likes (Priority Targets)
+        likes = 0
+        
+        # Method A: .count-number text
+        count_el = item_element.select_one(".count-number")
+        if count_el:
+            text = count_el.get_text(strip=True)
+            # Regex: matches "1,234" etc.
+            match = re.search(r'(\d+[\d,.]*)', text)
+            if match:
+                num_str = match.group(1).replace(",", "")
+                likes = int(float(num_str))
+
+        # Method B: aria-label (fallback or primary if A fails)
+        if likes == 0:
+            # Find button/span with aria-label containing keywords
+            candidates = item_element.select("button[aria-label], span[aria-label], a[aria-label]")
+            for el in candidates:
+                label = el.get("aria-label", "")
+                if any(k in label for k in ["スキ", "Loves", "Like"]):
+                    # Extract number: "スキ！ 1,234" -> 1234
+                    match = re.search(r'(\d+[\d,.]*)', label)
+                    if match:
+                         num_str = match.group(1).replace(",", "")
+                         likes = int(float(num_str))
+                         break
+        
+        # 3. Debug Parsing
+        if likes == 0:
+            # Log first 3 buttons' aria-labels
+            buttons = item_element.select("button, .js-like-btn")[:3]
+            debug_labels = []
+            for btn in buttons:
+                l = btn.get("aria-label")
+                if l: debug_labels.append(l)
+            
+            if debug_labels:
+                logger.warning(f"  [DEBUG] Likes=0 for {item_id or 'unknown'}. Found buttons: {debug_labels}")
+            else:
+                 logger.warning(f"  [DEBUG] Likes=0 for {item_id or 'unknown'}. No buttons with aria-label found.")
 
         # R18チェック
-        # Use data-badge-params or check specific badge classes
         is_r18 = False
         r18_el = item_element.select_one(".badge-adult, .is-adult, .r18-badge")
-        if r18_el:
-            is_r18 = True
+        if r18_el: is_r18 = True
         
-        # Fallback check on text content if badge is missing but text says R18
         if not is_r18:
             full_text = item_element.get_text()
             if "R-18" in full_text or "成人向け" in full_text:
-                is_r18 = True
+                 is_r18 = True
 
         if not name or not item_id:
             return None

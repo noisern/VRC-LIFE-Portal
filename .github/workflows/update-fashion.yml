@@ -26,7 +26,7 @@ jobs:
         run: pip install -r scripts/requirements.txt
 
       - name: Run BOOTH scraper pipeline
-        run: python scripts/run_pipeline.py
+        run: python scripts/run_pipeline.py --output docs/data/items.json
         env:
           # OpenAI APIキーを使う場合はSecretsに登録
           # OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
@@ -36,6 +36,6 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
           commit_message: 'auto: update fashion items [skip ci]'
-          file_pattern: data/items.json
+          file_pattern: docs/data/items.json
           commit_user_name: 'VRC-LIFE Bot'
           commit_user_email: 'bot@vrc-life-portal.example.com'

@@ -41,7 +41,7 @@ def run_pipeline(dry_run: bool = False, output_path: str = None) -> None:
     # 出力パスの決定
     if output_path is None:
         project_root = Path(__file__).parent.parent
-        output_path = project_root / "data" / "items.json"
+        output_path = project_root / "docs" / "data" / "items.json"
     else:
         output_path = Path(output_path)
 

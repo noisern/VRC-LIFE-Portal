@@ -99,8 +99,8 @@ def parse_item(item_element) -> Optional[dict]:
         if original_url:
             # VRChatバッジなどが紛れ込まないかチェック（簡易）
             if "shops/badges" not in original_url:
-                # wsrv.nl経由で取得（Referer回避＆WebP変換）
-                thumbnail_url = f"https://wsrv.nl/?url={original_url}&output=webp"
+                # 直リンクを使用（HTML側で <meta name="referrer" content="no-referrer"> が必要）
+                thumbnail_url = original_url
             else:
                 pass # logging.debug(f"Skipped badge image: {original_url}")
         else:

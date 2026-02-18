@@ -11,6 +11,7 @@ BOOTHの2026年1月27日改定ガイドラインに準拠:
 import requests
 from bs4 import BeautifulSoup
 import json
+import re
 import time
 import logging
 from datetime import datetime, timezone
@@ -79,7 +80,15 @@ def parse_item(item_element) -> Optional[dict]:
         original_url = ""
 
         if thumb_el:
-            original_url = thumb_el.get("data-original") or thumb_el.get("data-src") or ""
+            original_url = thumb_el.get("data-original") or thumb_el.get("data-src") or thumb_el.get("src") or ""
+            
+            # Fallback: extract from background-image style if attribute missing
+            if not original_url:
+                style = thumb_el.get("style", "")
+                if style:
+                    match = re.search(r"url\(['\"]?([^'\")]+)['\"]?\)", style)
+                    if match:
+                        original_url = match.group(1)
         
         # 2. なければ img タグ (ただしVRChatロゴなどを避けるため class 指定などを考慮)
         if not original_url:
@@ -92,6 +101,12 @@ def parse_item(item_element) -> Optional[dict]:
             if "shops/badges" not in original_url:
                 # wsrv.nl経由で取得（Referer回避＆WebP変換）
                 thumbnail_url = f"https://wsrv.nl/?url={original_url}&output=webp"
+            else:
+                pass # logging.debug(f"Skipped badge image: {original_url}")
+        else:
+             # Debug log for missing images (temporary)
+             # logger.warning(f"No image found for item {item_id}: HTML sample: {item_element.prettify()[:200]}")
+             pass
 
         # ショップ名
         shop_el = item_element.select_one("[class*='shop-name'], .shop-item-card__shop-name")

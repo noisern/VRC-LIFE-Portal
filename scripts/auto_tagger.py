@@ -126,6 +126,16 @@ TYPE_RULES = {
         r"texture", r"material", r"shader",
         r"UV", r"PSD",
     ],
+    "tool": [
+        r"ツール", r"ギミック", r"システム", r"スクリプト",
+        r"tool", r"system", r"script", r"sdk", r"prefab",
+        r"導入", r"設定", r"OSC", r"ワールド固定",
+    ],
+    "pose": [
+        r"ポーズ", r"アニメーション", r"モーション", r"ダンス",
+        r"pose", r"animation", r"motion", r"dance",
+        r"afk", r"emote", r"エモート",
+    ],
 }
 
 

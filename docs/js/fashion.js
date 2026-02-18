@@ -165,7 +165,8 @@ function createItemCard(item) {
         'casual': 'Casual', 'gothic': 'Gothic', 'pop': 'Pop'
     };
     const typeLabels = {
-        'avatar': 'Avatar', 'costume': 'Costume', 'accessory': 'Accessory', 'texture': 'Texture'
+        'avatar': 'Avatar', 'costume': 'Costume', 'accessory': 'Accessory', 'texture': 'Texture',
+        'tool': 'Tool', 'pose': 'Pose'
     };
 
     const tasteTags = (item.taste || []).map(t =>

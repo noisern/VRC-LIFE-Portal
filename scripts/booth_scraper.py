@@ -24,11 +24,12 @@ REQUEST_DELAY = 3  # seconds between requests
 MAX_PAGES = 5
 
 # BOOTH search URLs for VRChat items
-SEARCH_CATEGORIES = [
-    {"url": "https://booth.pm/ja/search/VRChat?sort=new", "label": "VRChat全般"},
-    {"url": "https://booth.pm/ja/browse/3D%E8%A1%A3%E8%A3%85?q=VRChat&sort=new", "label": "3D衣装"},
-    {"url": "https://booth.pm/ja/browse/3D%E3%82%AD%E3%83%A3%E3%83%A9%E3%82%AF%E3%82%BF%E3%83%BC?q=VRChat&sort=new", "label": "3Dキャラクター"},
-    {"url": "https://booth.pm/ja/browse/3D%E3%82%A2%E3%82%AF%E3%82%BB%E3%82%B5%E3%83%AA%E3%83%BC?q=VRChat&sort=new", "label": "3Dアクセサリー"},
+SEARCH_URLS = [
+    "https://booth.pm/ja/search/VRChat?sort=popular&page={}",
+    "https://booth.pm/ja/browse/3D%E8%A1%A3%E8%A3%85?q=VRChat&sort=popular&page={}",
+    "https://booth.pm/ja/browse/3D%E3%82%AD%E3%83%A3%E3%83%A9%E3%82%AF%E3%82%BF%E3%83%BC?q=VRChat&sort=popular&page={}",
+    # 3Dアクセサリー (URL修正)
+    "https://booth.pm/ja/browse/3D%E5%B0%8F%E7%89%A9?q=VRChat&sort=popular&page={}",
 ]
 
 HEADERS = {
@@ -166,12 +167,18 @@ def scrape_booth(fetch_details: bool = False, dry_run: bool = False) -> list[dic
     all_items = []
     seen_ids = set()
 
-    for category in SEARCH_CATEGORIES:
-        logger.info(f"\n--- カテゴリ: {category['label']} ---")
+    for i, search_url_base in enumerate(SEARCH_URLS):
+        category_label = [
+            "VRChat全般",
+            "3D衣装",
+            "3Dキャラクター",
+            "3D小物"
+        ][i]
+        
+        logger.info(f"\n--- カテゴリ: {category_label} ---")
 
         for page in range(1, MAX_PAGES + 1):
-            separator = "&" if "?" in category["url"] else "?"
-            page_url = f"{category['url']}{separator}page={page}"
+            page_url = search_url_base.format(page)
 
             soup = fetch_page(page_url, session)
             if not soup:

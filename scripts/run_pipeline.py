@@ -52,7 +52,7 @@ def run_pipeline(dry_run: bool = False, output_path: str = None) -> None:
 
     # Step 2: フィルタリング
     logger.info("\n[Step 2/3] フィルタリング...")
-    filtered_items = filter_items(raw_items, min_likes=100)
+    filtered_items = filter_items(raw_items, min_likes=0)
     logger.info(f"  → {len(filtered_items)} アイテム残存")
 
     # Step 3: タグ付け

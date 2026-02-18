@@ -201,12 +201,6 @@ def scrape_booth(fetch_details: bool = False, dry_run: bool = False) -> list[dic
             for el in item_elements:
                 item = parse_item(el)
                 
-                # Debug logging for 0 likes
-                if item and item.get("likes", 0) == 0 and not debug_html_dumped:
-                     logger.warning("Found item with 0 likes. Dumping HTML for debugging:")
-                     logger.warning(el.prettify()[:1000]) # First 1000 chars
-                     debug_html_dumped = True
-
                 if item and item["id"] not in seen_ids:
                     seen_ids.add(item["id"])
 

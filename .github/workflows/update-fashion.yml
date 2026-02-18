@@ -32,6 +32,14 @@ jobs:
           # OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           PYTHONUNBUFFERED: '1'
 
+      - name: Upload scraper logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: scraper-logs
+          path: logs/
+          retention-days: 5
+
       - name: Commit updated items.json
         uses: stefanzweifel/git-auto-commit-action@v5
         with:

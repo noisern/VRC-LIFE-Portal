@@ -45,8 +45,8 @@ def run_pipeline(dry_run: bool = False, output_path: str = None) -> None:
         output_path = Path(output_path)
 
     # Step 1: スクレイピング (フィルタリング込み)
-    # Step 1: スクレイピング (フィルタリング込み)
-    logger.info(f"\n[Step 1/2] BOOTHからアイテム収集 (Min Likes: 100)...")
+    # Step 1: スクレイピング (CSV Based)
+    logger.info(f"\n[Step 1/2] BOOTHからアイテム収集 (CSV List)...")
     
     # 既存データの読み込み (Incremental Update)
     existing_items = []
@@ -63,7 +63,7 @@ def run_pipeline(dry_run: bool = False, output_path: str = None) -> None:
     item_map = {item["id"]: item for item in existing_items}
 
     # 新規スクレイピング
-    new_items = scrape_booth(min_likes=100, dry_run=dry_run)
+    new_items = scrape_booth(min_likes=0, dry_run=dry_run)
     logger.info(f"  → 新規取得: {len(new_items)} アイテム")
 
     # マージ (上書き更新)

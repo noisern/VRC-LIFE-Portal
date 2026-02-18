@@ -47,123 +47,112 @@ def fetch_page(url: str, session: requests.Session) -> Optional[BeautifulSoup]:
         return None
 
 
-def parse_item(item_element: Tag) -> Optional[dict]:
-    """
-    HTML要素からアイテム情報を抽出する。
-    User Request V2: Use specific data attributes and robust regex.
-    """
-    try:
-        # 1. Get Basic Info from Attributes (Reliable)
-        # item_element is likely 'li.item-card'
-        name = item_element.get("data-product-name")
-        price_str = item_element.get("data-product-price")
-        item_id = item_element.get("data-product-id")
-        shop_name = item_element.get("data-product-brand")
-        
-        # Fallback if attributes missing (e.g. structure changed, but attributes are requested primary)
-        if not name:
-             title_el = item_element.select_one(".item-card__title, .js-mount-point-shop-item-card-title")
-             if title_el: name = title_el.get_text(strip=True)
-        
-        if not item_id:
-             # Try ID from URL
-             link = item_element.select_one("a[href*='/items/']")
-             if link:
-                 href = link.get("href")
-                 match = re.search(r'/items/(\d+)', href)
-                 if match: item_id = match.group(1)
+import csv
+import io
 
-        # Price parsing
+def fetch_csv_urls(csv_url: str) -> list[str]:
+    """GoogleスプレッドシートのCSVからURLリストを取得する。"""
+    try:
+        response = requests.get(csv_url)
+        response.raise_for_status()
+        
+        # CSV parse
+        f = io.StringIO(response.text)
+        reader = csv.reader(f)
+        urls = []
+        for row in reader:
+            if not row: continue
+            url = row[0].strip()
+            if url.startswith("http"):
+                urls.append(url)
+        
+        return list(set(urls)) # Unique
+    except Exception as e:
+        logger.error(f"Failed to fetch CSV: {e}")
+        return []
+
+def parse_item(item_element: Tag) -> Optional[dict]:
+    # Legacy function kept for interface compatibility if needed, but not used in CSV mode
+    return None
+
+def parse_item_detail_page(soup: BeautifulSoup, booth_url: str) -> Optional[dict]:
+    """個別商品ページのHTMLから情報を抽出する (Attribute-based)"""
+    try:
+        # 1. Basic Info from Attributes (Reliable)
+        # Strategy: find ANY element with data-product-id
+        product_el = soup.select_one("[data-product-id]")
+        if not product_el:
+            logger.warning(f"  [Skip] No data-product-id found in {booth_url}")
+            return None
+
+        item_id = product_el.get("data-product-id")
+        name = product_el.get("data-product-name")
+        price_str = product_el.get("data-product-price")
+        shop_name = product_el.get("data-product-brand")
+        
+        # Price
         price = 0
         if price_str:
             try:
                 price = int(float(price_str))
             except:
                 pass
-        else:
-             price_el = item_element.select_one(".price, .item-card__price")
-             if price_el:
-                 p_text = price_el.get_text(strip=True).replace(",", "").replace("¥", "")
-                 match = re.search(r'\d+', p_text)
-                 if match: price = int(match.group(0))
 
-        # URL & Thumbnail
-        booth_url = ""
+        # Thumbnail
+        # meta prop="og:image" is reliable for detail pages
         thumbnail_url = ""
+        og_img = soup.select_one('meta[property="og:image"]')
+        if og_img:
+            thumbnail_url = og_img.get("content", "")
         
-        link_el = item_element.select_one("a[data-original-url]")
-        if link_el:
-             booth_url = link_el.get("href") # usually relative or absolute? check
-             if booth_url and not booth_url.startswith("http"):
-                 booth_url = f"https://booth.pm{booth_url}"
-        else:
-             # Standard link check
-             link_el = item_element.select_one("a[href*='/items/']")
-             if link_el:
-                 booth_url = link_el.get("href")
-                 if not booth_url.startswith("http"):
-                     booth_url = f"https://booth.pm{booth_url}"
+        # Fallback thumbnail
+        if not thumbnail_url:
+            img_el = soup.select_one(".market-item-detail-item-image img")
+            img_el_2 = soup.select_one("img.market-item-detail-item-image") # possible variation
+            if img_el:
+                thumbnail_url = img_el.get("src", "")
+            elif img_el_2:
+                thumbnail_url = img_el_2.get("src", "")
 
-        thumb_el = item_element.select_one("img[src*='user_assets'], img.item-card__thumbnail-image")
-        if thumb_el:
-            thumbnail_url = thumb_el.get("data-original") or thumb_el.get("src") or ""
+        # Description
+        description = ""
+        desc_el = soup.select_one(".js-market-item-detail-description, .description")
+        if desc_el:
+            description = desc_el.get_text(separator="\n", strip=True)[:500]
 
-        # 2. Get Likes (Priority Targets)
+        # R18 Check
+        is_r18 = False
+        body_text = soup.get_text()
+        if "R-18" in body_text or soup.select_one(".badge-adult, .is-adult, .r18-badge"):
+            is_r18 = True
+
+        # Likes (Attribute based from potential buttons)
         likes = 0
-        
-        # Method A: .count-number text
-        count_el = item_element.select_one(".count-number")
+        # Method A: count element
+        count_el = soup.select_one(".js-like-count, .like-count, .count-number")
         if count_el:
             text = count_el.get_text(strip=True)
-            # Regex: matches "1,234" etc.
             match = re.search(r'(\d+[\d,.]*)', text)
             if match:
-                num_str = match.group(1).replace(",", "")
-                likes = int(float(num_str))
-
-        # Method B: aria-label (fallback or primary if A fails)
+                 likes = int(float(match.group(1).replace(",", "")))
+        
+        # Method B: aria-label
         if likes == 0:
-            # Find button/span with aria-label containing keywords
-            candidates = item_element.select("button[aria-label], span[aria-label], a[aria-label]")
+            candidates = soup.select("button[aria-label], a[aria-label]")
             for el in candidates:
                 label = el.get("aria-label", "")
                 if any(k in label for k in ["スキ", "Loves", "Like"]):
-                    # Extract number: "スキ！ 1,234" -> 1234
                     match = re.search(r'(\d+[\d,.]*)', label)
                     if match:
-                         num_str = match.group(1).replace(",", "")
-                         likes = int(float(num_str))
-                         break
-        
-        # 3. Debug Parsing
-        if likes == 0:
-            # Log first 3 buttons' aria-labels
-            buttons = item_element.select("button, .js-like-btn")[:3]
-            debug_labels = []
-            for btn in buttons:
-                l = btn.get("aria-label")
-                if l: debug_labels.append(l)
-            
-            if debug_labels:
-                logger.warning(f"  [DEBUG] Likes=0 for {item_id or 'unknown'}. Found buttons: {debug_labels}")
-            else:
-                 logger.warning(f"  [DEBUG] Likes=0 for {item_id or 'unknown'}. No buttons with aria-label found.")
-
-        # R18チェック
-        is_r18 = False
-        r18_el = item_element.select_one(".badge-adult, .is-adult, .r18-badge")
-        if r18_el: is_r18 = True
-        
-        if not is_r18:
-            full_text = item_element.get_text()
-            if "R-18" in full_text or "成人向け" in full_text:
-                 is_r18 = True
+                        likes = int(float(match.group(1).replace(",", "")))
+                        break
 
         if not name or not item_id:
             return None
 
+        # Return dict matching the expected schema
         return {
-            "id": item_id,
+            "id": f"booth-{item_id}", # Add prefix for consistency
             "name": name,
             "price": price,
             "shopName": shop_name,
@@ -171,11 +160,12 @@ def parse_item(item_element: Tag) -> Optional[dict]:
             "thumbnailUrl": thumbnail_url,
             "likes": likes,
             "isR18": is_r18,
-            "description": "",
+            "description": description,
             "fetchedAt": datetime.now(timezone.utc).isoformat(),
         }
+
     except Exception as e:
-        logger.warning(f"Failed to parse item: {e}")
+        logger.warning(f"  Failed to parse detail page {booth_url}: {e}")
         return None
 
 
@@ -184,84 +174,47 @@ def parse_item(item_element: Tag) -> Optional[dict]:
 
 def scrape_booth(min_likes: int = 0, fetch_details: bool = False, dry_run: bool = False) -> list[dict]:
     """
-    BOOTHからVRChat関連アイテムを収集する（全ページ走査）。
-    min_likes > 0 の場合、検索結果から取得したスキ数でフィルタリングを行う。
+    User Request V3: CSV-Based Scraping.
+    Fetches URLs from a Google Sheet CSV and scrapes individual pages.
     """
     if dry_run:
         logger.info("=== DRY RUN MODE ===")
         return _get_sample_data()
 
+    # CSV URL provided by user
+    CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ98u4MEiJ3o8jesqRUMv7hrg8atUwxQoIggjMlRWlHFCeCNDCObcde1cjOVXKVW5BFscQe7Z5zsG2_/pub?output=csv"
+    
     session = requests.Session()
+    session.headers.update(HEADERS)
+
+    logger.info(f"Fetching URL list from CSV...")
+    target_urls = fetch_csv_urls(CSV_URL)
+    logger.info(f"Target URLs: {len(target_urls)}")
+    
     all_items = []
-    seen_ids = set()
-
-    # BOOTH search URLs for VRChat items - Forced to 'popular' sort
-    SEARCH_URLS = [
-        {"url": "https://booth.pm/ja/search/VRChat?sort=popular", "label": "VRChat全般"},
-        # Limit categories for debug speed if needed, but keeping full list for now
-        {"url": "https://booth.pm/ja/search/3D%E8%A1%A3%E8%A3%85?sort=popular", "label": "3D衣装"},
-        {"url": "https://booth.pm/ja/search/3D%E3%82%AD%E3%83%A3%E3%83%A9%E3%82%AF%E3%82%BF%E3%83%BC?sort=popular", "label": "3Dキャラクター"},
-        {"url": "https://booth.pm/ja/search/3D%E5%B0%8F%E7%89%A9?sort=popular", "label": "3D小物"},
-    ]
-
-    for category in SEARCH_URLS:
-        logger.info(f"\n--- カテゴリ: {category['label']} ---")
-        page = 1
-        
-        while True:
-            page_url = f"{category['url']}&page={page}"
-            soup = fetch_page(page_url, session)
-            
+    seen_ids = set() 
+    
+    for i, url in enumerate(target_urls):
+        try:
+            logger.info(f"[{i+1}/{len(target_urls)}] Scraping: {url}")
+            soup = fetch_page(url, session)
             if not soup:
-                break
-
-            # アイテムカードを検索
-            item_elements = soup.select(
-                "li.item-card, .shop-item-card, [data-tracking-name='items']"
-            )
-
-            if not item_elements:
-                logger.info(f"  ページ {page}: アイテムなし (終了)")
-                break
-
-            processed_count_in_page = 0
+                continue
             
-            for el in item_elements:
-                item = parse_item(el)
-                
-                if not item:
-                    continue
-
-                # --- 厳格なフィルタリング ---
-                # 1. R18除外
-                if item["isR18"]:
-                    # logger.info(f"Skipping R18: {item['name']}")
-                    continue
-                
-                # 重複チェック
+            item = parse_item_detail_page(soup, url)
+            
+            if item:
+                # Check duplication
                 if item["id"] not in seen_ids:
-                    
-                    # 2. いいね数フィルタ (検索結果ページの値を使用)
-                    current_likes = item.get("likes", 0)
-                    if min_likes > 0 and current_likes < min_likes:
-                         # Log why it was skipped to help debugging (sample first few failures)
-                         # logger.info(f"Skipping low likes ({current_likes}): {item['name']}")
-                         continue
-
-                    # 採用
                     seen_ids.add(item["id"])
                     all_items.append(item)
-                    processed_count_in_page += 1
-
-            logger.info(f"  ページ {page}: 有効アイテム {processed_count_in_page}件 / 候補 {len(item_elements)}件 (累計: {len(all_items)}件)")
+                    logger.info(f"  -> OK: {item["name"]} (Likes: {item["likes"]})")
+                else:
+                    logger.info(f"  -> Duplicate ID: {item["id"]}")
             
-            # Limit to 50 pages
-            if page > 50:
-                 logger.info("  ページ上限到達 (50ページ)")
-                 break
-
-            page += 1
-
+        except Exception as e:
+            logger.error(f"Error extracting {url}: {e}")
+            
     logger.info(f"\n=== 合計 {len(all_items)} アイテム収集完了 ===")
     return all_items
 

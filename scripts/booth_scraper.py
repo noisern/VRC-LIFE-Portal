@@ -80,7 +80,10 @@ def parse_item(item_element) -> Optional[dict]:
         img_el = item_element.select_one("img")
         thumbnail_url = ""
         if img_el:
-            thumbnail_url = img_el.get("data-src") or img_el.get("src") or ""
+            original_url = img_el.get("data-src") or img_el.get("src") or ""
+            if original_url:
+                # wsrv.nl経由で取得（Referer回避＆WebP変換）
+                thumbnail_url = f"https://wsrv.nl/?url={original_url}&output=webp"
 
         # ショップ名
         shop_el = item_element.select_one("[class*='shop-name'], .shop-item-card__shop-name")
@@ -211,7 +214,7 @@ def _get_sample_data() -> list[dict]:
             "price": 2500,
             "shopName": "CyberWear Studio",
             "boothUrl": "https://booth.pm/ja/items/1234567",
-            "thumbnailUrl": "https://booth.pximg.net/sample1.jpg",
+            "thumbnailUrl": "https://wsrv.nl/?url=https://booth.pximg.net/sample1.jpg&output=webp",
             "likes": 350,
             "isR18": False,
             "description": "VRChat対応のサイバーパンク風ジャケット。対応アバター：舞夜、桔梗、セレスティア。",

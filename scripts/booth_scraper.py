@@ -126,26 +126,8 @@ def parse_item_detail_page(soup: BeautifulSoup, booth_url: str) -> Optional[dict
         if "R-18" in body_text or soup.select_one(".badge-adult, .is-adult, .r18-badge"):
             is_r18 = True
 
-        # Likes (Attribute based from potential buttons)
+        # Likes (Removed by User Request V5)
         likes = 0
-        # Method A: count element
-        count_el = soup.select_one(".js-like-count, .like-count, .count-number")
-        if count_el:
-            text = count_el.get_text(strip=True)
-            match = re.search(r'(\d+[\d,.]*)', text)
-            if match:
-                 likes = int(float(match.group(1).replace(",", "")))
-        
-        # Method B: aria-label
-        if likes == 0:
-            candidates = soup.select("button[aria-label], a[aria-label]")
-            for el in candidates:
-                label = el.get("aria-label", "")
-                if any(k in label for k in ["スキ", "Loves", "Like"]):
-                    match = re.search(r'(\d+[\d,.]*)', label)
-                    if match:
-                        likes = int(float(match.group(1).replace(",", "")))
-                        break
 
         if not name or not item_id:
             return None

@@ -183,7 +183,10 @@ def scrape_booth(fetch_details: bool = False, dry_run: bool = False) -> list[dic
             )
 
             if not item_elements:
-                logger.info(f"  ページ {page}: アイテムなし、次のカテゴリへ")
+                logger.warning(f"  ページ {page}: アイテムなし")
+                if soup.title:
+                    logger.info(f"  Page Title: {soup.title.string.strip()}")
+                logger.info(f"  Page Preview: {soup.prettify()[:500]}")
                 break
 
             logger.info(f"  ページ {page}: {len(item_elements)} アイテム検出")

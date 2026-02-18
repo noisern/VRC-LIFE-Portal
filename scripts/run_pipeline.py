@@ -70,6 +70,12 @@ def run_pipeline(dry_run: bool = False, output_path: str = None) -> None:
         "items": tagged_items,
     }
 
+    # 空の結果だった場合は出力しない（既存データを保護）
+    if not tagged_items:
+        logger.error("❌ エラー: 収集されたアイテムが0件のため、items.json の更新をスキップします。")
+        # GitHub Actionsでエラーとして扱いたい場合は exit(1) する
+        sys.exit(1)
+
     # JSON出力
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "w", encoding="utf-8") as f:

@@ -65,7 +65,7 @@ function createNewArrivalCard(item) {
     return `
         <a href="${item.boothUrl}" target="_blank" rel="noopener noreferrer"
            class="group block" data-item-id="${item.id}">
-            <div class="aspect-[3/4] bg-[#E5E4DE] mb-3 overflow-hidden relative">
+            <div class="aspect-square bg-[#E5E4DE] mb-3 overflow-hidden relative">
                 <img src="${item.thumbnailUrl}" alt="${item.name}"
                      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                      onerror="this.style.display='none'">
@@ -78,7 +78,6 @@ function createNewArrivalCard(item) {
                 <h3 class="text-sm font-serif-display italic leading-snug line-clamp-2">${item.name}</h3>
                 <div class="flex items-center justify-between">
                     <p class="text-xs font-bold">¥${item.price.toLocaleString()}</p>
-                    <p class="text-[10px] text-[#999]">♡ ${item.likes}</p>
                 </div>
                 <div class="flex flex-wrap gap-1 mt-1">${tasteTags}</div>
             </div>
@@ -176,7 +175,7 @@ function createItemCard(item) {
     return `
         <div class="item-card group" data-item-id="${item.id}">
             <!-- Image -->
-            <div class="aspect-[3/4] bg-[#E5E4DE] mb-4 overflow-hidden relative">
+            <div class="aspect-square bg-[#E5E4DE] mb-4 overflow-hidden relative">
                 <img src="${item.thumbnailUrl}" alt="${item.name}"
                      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                      onerror="this.style.display='none'">
@@ -191,7 +190,6 @@ function createItemCard(item) {
                 <h3 class="text-sm font-serif-display italic leading-snug line-clamp-2">${item.name}</h3>
                 <div class="flex items-center justify-between">
                     <p class="text-xs font-bold">¥${item.price.toLocaleString()}</p>
-                    <p class="text-[10px] text-[#999]">♡ ${item.likes}</p>
                 </div>
                 <div class="flex flex-wrap gap-1">${tasteTags}</div>
             </div>

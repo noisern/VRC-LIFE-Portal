@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>STYLE LOOKBOOK | VRC-LIFE Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&family=Noto+Sans+JP:wght@300;400;500;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+
+<body class="bg-[#FDFCF5] text-[#333333] font-sans tracking-wide">
+    <div
+        class="fixed top-0 left-0 w-full h-screen bg-[url('../images/knowledge_header_bg.png')] bg-cover bg-center opacity-10 pointer-events-none z-0">
+    </div>
+
+    <!-- Header -->
+    <header
+        class="h-16 flex items-center px-6 border-b border-[#E5E4DE] sticky top-0 z-50 bg-[#FDFCF5]/90 backdrop-blur-sm">
+        <a href="../index.html" class="block">
+            <img src="../images/logo.png" alt="VRC-LIFE" class="h-8 object-contain">
+        </a>
+        <nav class="ml-auto hidden md:flex space-x-8 text-xs tracking-widest text-[#666666]">
+            <a href="../index.html" class="hover:text-black transition-colors">HOME</a>
+            <a href="../knowledge/index.html" class="hover:text-black transition-colors">KNOWLEDGE</a>
+            <a href="index.html" class="text-black font-bold">FASHION</a>
+        </nav>
+        <!-- Mobile Menu Placeholder -->
+        <button class="ml-auto md:hidden text-[#333333]">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 6h16M4 12h16M4 18h16">
+                </path>
+            </svg>
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="relative z-10 px-6 py-12 max-w-[1920px] mx-auto">
+
+        <!-- Page Title -->
+        <h1 class="text-4xl md:text-6xl font-serif-display font-bold text-center mb-12 tracking-tight italic">
+            STYLE LOOKBOOK
+        </h1>
+
+        <!-- Toggle / Filter (Visual Only for now) -->
+        <div class="flex justify-center mb-16">
+            <div class="inline-flex border border-[#333333]">
+                <button class="px-6 py-2 text-xs font-bold tracking-widest bg-[#333333] text-white">MEN'S</button>
+                <button
+                    class="px-6 py-2 text-xs font-bold tracking-widest hover:bg-gray-100 border-l border-[#333333]">WOMEN'S</button>
+                <button
+                    class="px-6 py-2 text-xs font-bold tracking-widest hover:bg-gray-100 border-l border-[#333333]">KIDS'</button>
+            </div>
+        </div>
+
+        <!-- Looks Container -->
+        <div class="space-y-32">
+
+            <!-- Look 001 -->
+            <article id="look-001" class="flex flex-col lg:flex-row gap-12 items-start">
+                <!-- Photo Area -->
+                <div class="w-full lg:w-3/5 aspect-[3/4] bg-gray-200 relative">
+                    <img src="../images/FASHION.jpg" alt="Look 001" class="w-full h-full object-cover">
+                    <div class="absolute top-4 left-4 bg-white/90 px-3 py-1 text-xs font-bold tracking-widest">
+                        LOOK #001
+                    </div>
+                </div>
+
+                <!-- Text Area -->
+                <div class="w-full lg:w-2/5 flex flex-col h-full justify-between py-4">
+                    <div>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span
+                                class="border border-[#333333] px-3 py-1 text-[10px] tracking-widest uppercase">Cyberpunk</span>
+                            <span
+                                class="border border-[#333333] px-3 py-1 text-[10px] tracking-widest uppercase">Street</span>
+                        </div>
+                        <h2 class="text-3xl font-serif-display italic mb-6">The Neo-Tokyo Drifter</h2>
+                        <p class="text-sm leading-relaxed text-[#666666] mb-8 font-light">
+                            ネオンきらめく夜の街を疾走するためのスタイル。機能性とデザイン性を兼ね備えたジャケットは、
+                            バーチャルリアリティの過酷な環境（？）でも快適な着心地を提供します。
+                            足元のスニーカーは重力制御装置付き（設定）。
+                        </p>
+                    </div>
+
+                    <!-- Linked Items -->
+                    <div>
+                        <h3 class="text-xs font-bold tracking-widest border-b border-[#E5E4DE] pb-2 mb-4">ITEMS IN THIS
+                            LOOK</h3>
+                        <div class="grid grid-cols-3 gap-4">
+                            <!-- Link to Item 001 -->
+                            <a href="list.html#item-001" class="group block cursor-pointer">
+                                <div class="aspect-square bg-gray-100 mb-2 overflow-hidden">
+                                    <img src="../images/FASHION.jpg"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+                                </div>
+                                <p class="text-[10px] text-[#999999] truncate">Cyber Jacket</p>
+                            </a>
+                            <!-- Link to Item 002 -->
+                            <a href="list.html#item-002" class="group block cursor-pointer">
+                                <div class="aspect-square bg-gray-100 mb-2 overflow-hidden">
+                                    <img src="../images/TREND.jpg"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+                                </div>
+                                <p class="text-[10px] text-[#999999] truncate">Tech Pants</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+            <!-- Look 002 -->
+            <article id="look-002" class="flex flex-col lg:flex-row-reverse gap-12 items-start">
+                <!-- Photo Area -->
+                <div class="w-full lg:w-3/5 aspect-[3/4] bg-gray-200 relative">
+                    <img src="../images/knowledge_modification.jpg" alt="Look 002" class="w-full h-full object-cover">
+                    <div class="absolute top-4 right-4 bg-white/90 px-3 py-1 text-xs font-bold tracking-widest">
+                        LOOK #002
+                    </div>
+                </div>
+
+                <!-- Text Area -->
+                <div class="w-full lg:w-2/5 flex flex-col h-full justify-between py-4">
+                    <div>
+                        <div class="flex flex-wrap gap-2 mb-6">
+                            <span
+                                class="border border-[#333333] px-3 py-1 text-[10px] tracking-widest uppercase">Wa-Modern</span>
+                            <span
+                                class="border border-[#333333] px-3 py-1 text-[10px] tracking-widest uppercase">Casual</span>
+                        </div>
+                        <h2 class="text-3xl font-serif-display italic mb-6">Digital Tea Ceremony</h2>
+                        <p class="text-sm leading-relaxed text-[#666666] mb-8 font-light">
+                            伝統的な和装をデジタル世代向けに再解釈。
+                            着物のシルエットを残しつつ、動きやすい素材とショート丈でモダンにアレンジ。
+                            古都のワールド散策に最適な一着です。
+                        </p>
+                    </div>
+
+                    <!-- Linked Items -->
+                    <div>
+                        <h3 class="text-xs font-bold tracking-widest border-b border-[#E5E4DE] pb-2 mb-4">ITEMS IN THIS
+                            LOOK</h3>
+                        <div class="grid grid-cols-3 gap-4">
+                            <!-- Link to Item 003 -->
+                            <a href="list.html#item-003" class="group block cursor-pointer">
+                                <div class="aspect-square bg-gray-100 mb-2 overflow-hidden">
+                                    <img src="../images/knowledge_modification.jpg"
+                                        class="w-full h-full object-cover group-hover:scale-105 transition-transform">
+                                </div>
+                                <p class="text-[10px] text-[#999999] truncate">Modern Kimono</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </article>
+
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#FDFCF5] text-[#999999] text-xs py-10 text-center border-t border-[#E5E4DE] relative z-10">
+        <p class="mb-2 tracking-widest">VRC-LIFE PORTAL</p>
+        <p>&copy; 2026 VRC-LIFE Portal. All rights reserved.</p>
+    </footer>
+
+</body>
+
+</html>

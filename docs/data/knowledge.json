@@ -1,0 +1,26 @@
+[
+    {
+        "id": "1",
+        "title": "初めての仮想現実：VRChatで最初にするべきこと",
+        "category": "VRC START GUIDE",
+        "image": "../images/world.jpg",
+        "summary": "VRChatを始めたばかりのあなたへ。アカウント作成から最初のワールド設定、基本的な操作方法までを優しく解説します。",
+        "link": "article_01.html"
+    },
+    {
+        "id": "2",
+        "title": "Unity 2022への移行とアバターアップロードの基本",
+        "category": "UNITY BASICS",
+        "image": "../images/fashion.jpg",
+        "summary": "最新のUnity 2022環境への移行手順と、VCCを使用したアバターのアップロード方法をステップバイステップで紹介。",
+        "link": "article_02.html"
+    },
+    {
+        "id": "3",
+        "title": "解決！アバターがピンク色（Shaderエラー）になった時の対処法",
+        "category": "TROUBLESHOOTING",
+        "image": "../images/trend.jpg",
+        "summary": "ワールドやアバターがピンク色になってしまう「ショッキングピンク」現象。その原因と、シェーダー設定による解決策を解説。",
+        "link": "article_03.html"
+    }
+]

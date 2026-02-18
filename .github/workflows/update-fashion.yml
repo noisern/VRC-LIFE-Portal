@@ -1,0 +1,41 @@
+name: Update FASHION Items
+
+on:
+  schedule:
+    # 毎日 JST 10:00 (UTC 01:00) に実行
+    - cron: '0 1 * * *'
+  workflow_dispatch:
+    # 手動実行も可能
+
+jobs:
+  update-items:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r scripts/requirements.txt
+
+      - name: Run BOOTH scraper pipeline
+        run: python scripts/run_pipeline.py
+        env:
+          # OpenAI APIキーを使う場合はSecretsに登録
+          # OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          PYTHONUNBUFFERED: '1'
+
+      - name: Commit updated items.json
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'auto: update fashion items [skip ci]'
+          file_pattern: data/items.json
+          commit_user_name: 'VRC-LIFE Bot'
+          commit_user_email: 'bot@vrc-life-portal.example.com'

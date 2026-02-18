@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KNOWLEDGE | VRC-LIFE Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&family=Noto+Sans+JP:wght@300;400;500;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+
+<body class="bg-[#FDFCF5] text-[#333333] font-sans tracking-wide">
+    <div
+        class="fixed top-0 left-0 w-full h-screen bg-[url('../images/knowledge_header_bg.png')] bg-cover bg-center opacity-10 pointer-events-none z-0">
+    </div>
+
+    <!-- Header -->
+    <header
+        class="h-16 flex items-center px-6 border-b border-[#E5E4DE] sticky top-0 z-50 bg-[#FDFCF5]/90 backdrop-blur-sm">
+        <a href="../index.html" class="block">
+            <img src="../images/logo.png" alt="VRC-LIFE" class="h-8 object-contain">
+        </a>
+        <nav class="ml-auto hidden md:flex space-x-8 text-xs tracking-widest text-[#666666]">
+            <a href="../index.html" class="hover:text-black transition-colors">HOME</a>
+            <a href="index.html" class="text-black">KNOWLEDGE</a>
+        </nav>
+        <!-- Mobile Menu Placeholder -->
+        <button class="ml-auto md:hidden text-[#333333]">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 6h16M4 12h16M4 18h16">
+                </path>
+            </svg>
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="relative z-10 px-6 py-12 max-w-[1920px] mx-auto">
+        <!-- Section Header -->
+        <div class="mb-16">
+            <div class="flex flex-col items-start">
+                <span class="text-sm font-normal tracking-[0.2em] text-[#999999] mb-2 pl-1">VRC-LIFE PORTAL</span>
+                <h1 class="text-7xl md:text-9xl font-semibold text-[#333333] tracking-tighter leading-none mb-4 select-none"
+                    style="transform: scale(0.97); transform-origin: left top; margin-top: 0.3rem;">
+                    KNOWLEDGE
+                </h1>
+                <div class="flex items-center gap-4 w-full">
+                    <div class="h-1 w-24 bg-gradient-to-r from-[#DCAE96] via-[#A2B5BB] to-[#8A9A5B]"></div>
+                    <p class="text-sm md:text-base text-[#666666] tracking-widest font-medium">VRChat Life Navigation
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Search & Filter Banners -->
+        <div class="flex flex-col gap-6 mb-16">
+
+            <!-- Category Filter Cards (Design C: Minimal Numbered Panels) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+
+                <!-- VRChat入門 Card -->
+                <div class="category-banner group cursor-pointer relative" data-category="VRChat入門"
+                    style="padding: 2rem 0;">
+                    <!-- Large Background Number -->
+                    <span class="absolute top-0 right-0 text-[#E5E4DE] select-none pointer-events-none"
+                        style="font-size: 8rem; font-weight: 900; line-height: 1; opacity: 0.4;">01</span>
+                    <!-- Content -->
+                    <div class="relative z-10">
+                        <!-- Small Landscape Image -->
+                        <div class="overflow-hidden mb-5" style="height: 140px; border-radius: 4px;">
+                            <img src="../images/knowledge_intro.jpg" alt="VRChat入門"
+                                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                        </div>
+                        <!-- Category Name -->
+                        <h2 class="text-2xl font-semibold tracking-wide text-[#333333] mb-2">VRChat入門</h2>
+                        <!-- Accent Underline (animated) -->
+                        <div style="height: 2px; background: #DCAE96; width: 2rem; transition: width 0.5s ease;"
+                            class="category-underline mb-4"></div>
+                        <!-- Description -->
+                        <p class="text-sm text-[#666666] leading-relaxed mb-4">VRChatの始め方から基本操作、マナーまで。最初の一歩をしっかりサポートします。
+                        </p>
+                        <!-- Footer -->
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-[#999999] tracking-widest">5 ARTICLES</span>
+                            <span
+                                class="text-xs tracking-[0.3em] opacity-0 group-hover:opacity-100 transition-all duration-500 font-semibold"
+                                style="color: #DCAE96;">VIEW →</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 改変基礎 Card -->
+                <div class="category-banner group cursor-pointer relative" data-category="改変基礎"
+                    style="padding: 2rem 0;">
+                    <!-- Large Background Number -->
+                    <span class="absolute top-0 right-0 text-[#E5E4DE] select-none pointer-events-none"
+                        style="font-size: 8rem; font-weight: 900; line-height: 1; opacity: 0.4;">02</span>
+                    <!-- Content -->
+                    <div class="relative z-10">
+                        <!-- Small Landscape Image -->
+                        <div class="overflow-hidden mb-5" style="height: 140px; border-radius: 4px;">
+                            <img src="../images/knowledge_modification.jpg" alt="改変基礎"
+                                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                        </div>
+                        <!-- Category Name -->
+                        <h2 class="text-2xl font-semibold tracking-wide text-[#333333] mb-2">改変基礎</h2>
+                        <!-- Accent Underline (animated) -->
+                        <div style="height: 2px; background: #A2B5BB; width: 2rem; transition: width 0.5s ease;"
+                            class="category-underline mb-4"></div>
+                        <!-- Description -->
+                        <p class="text-sm text-[#666666] leading-relaxed mb-4">Unityの使い方やアバターアップロードなど、改変の基本をわかりやすく解説。
+                        </p>
+                        <!-- Footer -->
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-[#999999] tracking-widest">1 ARTICLE</span>
+                            <span
+                                class="text-xs tracking-[0.3em] opacity-0 group-hover:opacity-100 transition-all duration-500 font-semibold"
+                                style="color: #A2B5BB;">VIEW →</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- トラブル解決 Card -->
+                <div class="category-banner group cursor-pointer relative" data-category="トラブル解決"
+                    style="padding: 2rem 0;">
+                    <!-- Large Background Number -->
+                    <span class="absolute top-0 right-0 text-[#E5E4DE] select-none pointer-events-none"
+                        style="font-size: 8rem; font-weight: 900; line-height: 1; opacity: 0.4;">03</span>
+                    <!-- Content -->
+                    <div class="relative z-10">
+                        <!-- Small Landscape Image -->
+                        <div class="overflow-hidden mb-5" style="height: 140px; border-radius: 4px;">
+                            <img src="../images/knowledge_trouble.jpg" alt="トラブル解決"
+                                class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105">
+                        </div>
+                        <!-- Category Name -->
+                        <h2 class="text-2xl font-semibold tracking-wide text-[#333333] mb-2">トラブル解決</h2>
+                        <!-- Accent Underline (animated) -->
+                        <div style="height: 2px; background: #8A9A5B; width: 2rem; transition: width 0.5s ease;"
+                            class="category-underline mb-4"></div>
+                        <!-- Description -->
+                        <p class="text-sm text-[#666666] leading-relaxed mb-4">
+                            アバターのアップロードまでに発生するエラーや、よくあるバグ・トラブルの原因と解決策を紹介。</p>
+                        </p>
+                        <!-- Footer -->
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs text-[#999999] tracking-widest">1 ARTICLE</span>
+                            <span
+                                class="text-xs tracking-[0.3em] opacity-0 group-hover:opacity-100 transition-all duration-500 font-semibold"
+                                style="color: #8A9A5B;">VIEW →</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Search Bar (Centered & Conceptual) -->
+            <div class="flex justify-center mt-12 mb-12">
+                <div class="relative w-full max-w-3xl group">
+                    <input type="text" id="search-input" placeholder="SEARCH ARTICLE..."
+                        class="w-full bg-transparent border-b-2 border-[#333333] py-4 text-2xl md:text-4xl font-light text-[#333333] placeholder-[#E5E4DE] focus:outline-none focus:border-[#333333] transition-colors duration-300 tracking-[0.1em]">
+                    <span
+                        class="absolute right-2 top-1/2 -translate-y-1/2 text-[#333333] transition-colors duration-300">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 md:h-10 md:w-10" fill="none"
+                            viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                        </svg>
+                    </span>
+                </div>
+            </div>
+
+            <!-- Google AdSense Space (Horizontal Banner) -->
+            <div class="flex justify-center mb-24">
+                <div
+                    class="w-full max-w-[728px] h-[90px] bg-[#E5E4DE]/50 flex items-center justify-center border border-dashed border-[#999999] text-[#999999] text-xs tracking-widest">
+                    <!-- Google AdSense Code Here -->
+                    GOOGLE ADSENSE SPACE (728x90)
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Article Grid -->
+        <div id="knowledge-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Articles will be injected here via JS -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#FDFCF5] text-[#999999] text-xs py-10 text-center border-t border-[#E5E4DE] relative z-10">
+        <p class="mb-2 tracking-widest">VRC-LIFE PORTAL</p>
+        <p>&copy; 2026 VRC-LIFE Portal. All rights reserved.</p>
+    </footer>
+
+    <script src="../js/knowledge.js"></script>
+</body>
+
+</html>

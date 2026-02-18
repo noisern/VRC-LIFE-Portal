@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VRC-LIFE Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Noto+Sans+JP:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="bg-black text-white font-sans tracking-wide overflow-hidden">
+
+    <!-- Welcome Overlay -->
+    <div id="welcome-screen"
+        class="fixed inset-0 z-[100] bg-black flex flex-col items-center justify-center cursor-pointer transition-opacity duration-1000">
+        <div class="text-center space-y-6">
+            <!-- Logo with invert filter to make text white and screen blend to remove black background that results from invert -->
+            <img src="images/logo.png" alt="VRC-LIFE" class="welcome-logo md:h-32 object-contain animate-pulse"
+                style="filter: invert(1); mix-blend-mode: screen;">
+            <p class="text-xs md:text-sm text-gray-500 tracking-[0.3em]">
+                <span class="md:hidden">Tap to Enter</span>
+                <span class="hidden md:inline">Click to Enter</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <div class="flex flex-col h-screen w-full">
+
+        <!-- Header -->
+        <header class="h-16 bg-black flex items-center px-6 z-50 border-b border-gray-900 shrink-0">
+            <a href="index.html" class="block">
+                <img src="images/logo.png" alt="VRC-LIFE" class="h-8 object-contain"
+                    style="filter: invert(1); mix-blend-mode: screen;">
+            </a>
+        </header>
+
+        <!-- Navigation Area -->
+        <main class="flex-1 flex flex-col md:flex-row overflow-hidden">
+
+            <!-- KNOWLEDGE -->
+            <a href="knowledge/index.html"
+                class="flex-1 relative group overflow-hidden border-b md:border-b-0 md:border-r border-gray-800 last:border-0">
+                <img src="images/KNOWLEDGE.jpg" alt="Knowledge"
+                    class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out grayscale group-hover:grayscale-0">
+                <div class="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500">
+                </div>
+                <div
+                    class="absolute inset-0 flex flex-col justify-center items-center z-10 text-white group-hover:text-black transition-colors duration-500">
+                    <h2
+                        class="text-3xl md:text-4xl font-light group-hover:font-normal tracking-[0.2em] group-hover:tracking-[0.3em] transition-all duration-500">
+                        KNOWLEDGE</h2>
+                    <span
+                        class="mt-4 text-xs tracking-widest opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-100">Unity
+                        & Creation Tips</span>
+                </div>
+            </a>
+
+            <!-- FASHION -->
+            <a href="fashion/index.html"
+                class="flex-1 relative group overflow-hidden border-b md:border-b-0 md:border-r border-gray-800 last:border-0">
+                <img src="images/FASHION.jpg" alt="Fashion"
+                    class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out grayscale group-hover:grayscale-0">
+                <div class="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500">
+                </div>
+                <div
+                    class="absolute inset-0 flex flex-col justify-center items-center z-10 text-white group-hover:text-black transition-colors duration-500">
+                    <h2
+                        class="text-3xl md:text-4xl font-light group-hover:font-normal tracking-[0.2em] group-hover:tracking-[0.3em] transition-all duration-500">
+                        FASHION</h2>
+                    <span
+                        class="mt-4 text-xs tracking-widest opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-100">Avatar
+                        & Trends</span>
+                </div>
+            </a>
+
+            <!-- WORLD -->
+            <a href="world.html"
+                class="flex-1 relative group overflow-hidden border-b md:border-b-0 md:border-r border-gray-800 last:border-0">
+                <img src="images/WORLD.jpg" alt="World"
+                    class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out grayscale group-hover:grayscale-0">
+                <div class="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500">
+                </div>
+                <div
+                    class="absolute inset-0 flex flex-col justify-center items-center z-10 text-white group-hover:text-black transition-colors duration-500">
+                    <h2
+                        class="text-3xl md:text-4xl font-light group-hover:font-normal tracking-[0.2em] group-hover:tracking-[0.3em] transition-all duration-500">
+                        WORLD</h2>
+                    <span
+                        class="mt-4 text-xs tracking-widest opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-100">Virtual
+                        Landscapes</span>
+                </div>
+            </a>
+
+            <!-- TREND -->
+            <a href="#"
+                class="flex-1 relative group overflow-hidden border-b md:border-b-0 md:border-r border-gray-800 last:border-0">
+                <img src="images/TREND.jpg" alt="Trend"
+                    class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out grayscale group-hover:grayscale-0">
+                <div class="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500">
+                </div>
+                <div
+                    class="absolute inset-0 flex flex-col justify-center items-center z-10 text-white group-hover:text-black transition-colors duration-500">
+                    <h2
+                        class="text-3xl md:text-4xl font-light group-hover:font-normal tracking-[0.2em] group-hover:tracking-[0.3em] transition-all duration-500">
+                        TREND</h2>
+                    <span
+                        class="mt-4 text-xs tracking-widest opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-100">Events
+                        & News</span>
+                </div>
+            </a>
+
+            <!-- CONNECTION -->
+            <a href="#"
+                class="flex-1 relative group overflow-hidden border-b md:border-b-0 md:border-r border-gray-800 last:border-0">
+                <img src="images/CONNECTION.jpg" alt="Connection"
+                    class="absolute inset-0 w-full h-full object-cover opacity-60 group-hover:opacity-100 group-hover:scale-105 transition-all duration-700 ease-out grayscale group-hover:grayscale-0">
+                <div class="absolute inset-0 bg-black/40 group-hover:bg-transparent transition-colors duration-500">
+                </div>
+                <div
+                    class="absolute inset-0 flex flex-col justify-center items-center z-10 text-white group-hover:text-black transition-colors duration-500">
+                    <h2
+                        class="text-3xl md:text-4xl font-light group-hover:font-normal tracking-[0.2em] group-hover:tracking-[0.3em] transition-all duration-500">
+                        CONNECTION</h2>
+                    <span
+                        class="mt-4 text-xs tracking-widest opacity-0 group-hover:opacity-100 transform translate-y-4 group-hover:translate-y-0 transition-all duration-500 delay-100">Creators
+                        & Clients</span>
+                </div>
+            </a>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="bg-black text-gray-500 text-xs py-4 text-center border-t border-gray-800 z-50 shrink-0">
+            <p>&copy; 2026 VRC-LIFE Portal. All rights reserved.</p>
+        </footer>
+
+    </div>
+
+    <script src="js/home.js"></script>
+</body>
+
+</html>

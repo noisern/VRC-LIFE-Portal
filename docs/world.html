@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WORLD | VRC-LIFE Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Noto+Sans+JP:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="bg-gray-50 text-gray-800 font-sans tracking-wide">
+
+    <!-- Header -->
+    <header class="fixed w-full bg-white/90 backdrop-blur-sm z-50 border-b border-gray-100">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <!-- Logo with multiply blend mode to make white background transparent on white header -->
+            <a href="index.html" class="block"><img src="images/logo.png" alt="VRC-LIFE" class="h-8 object-contain"
+                    style="mix-blend-mode: multiply;"></a>
+            <nav class="hidden md:flex space-x-8 text-sm font-medium text-gray-500">
+                <a href="#" class="hover:text-black transition-colors">KNOWLEDGE</a>
+                <a href="#" class="hover:text-black transition-colors">FASHION</a>
+                <a href="world.html" class="text-black">WORLD</a>
+                <a href="#" class="hover:text-black transition-colors">TREND</a>
+                <a href="#" class="hover:text-black transition-colors">CONNECTION</a>
+            </nav>
+            <button class="md:hidden text-gray-500">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16m-7 6h7">
+                    </path>
+                </svg>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="pt-24 pb-20">
+        <div class="container mx-auto px-6">
+
+            <!-- Page Title -->
+            <div class="mb-12 text-center">
+                <h2 class="text-3xl font-light tracking-tight mb-2">WORLD ARCHIVE</h2>
+                <p class="text-sm text-gray-400">Discover new realities.</p>
+            </div>
+
+            <!-- Filter Tags -->
+            <div class="mb-10 flex flex-wrap justify-center gap-3" id="filter-container">
+                <button
+                    class="filter-btn active px-4 py-1.5 rounded-full border border-gray-300 bg-black text-white text-xs tracking-wider transition-all hover:bg-gray-800"
+                    data-tag="all">ALL</button>
+                <button
+                    class="filter-btn px-4 py-1.5 rounded-full border border-gray-300 bg-white text-gray-600 text-xs tracking-wider transition-all hover:bg-gray-100"
+                    data-tag="Chill">#Chill</button>
+                <button
+                    class="filter-btn px-4 py-1.5 rounded-full border border-gray-300 bg-white text-gray-600 text-xs tracking-wider transition-all hover:bg-gray-100"
+                    data-tag="Game">#Game</button>
+                <button
+                    class="filter-btn px-4 py-1.5 rounded-full border border-gray-300 bg-white text-gray-600 text-xs tracking-wider transition-all hover:bg-gray-100"
+                    data-tag="Scenery">#Scenery</button>
+                <button
+                    class="filter-btn px-4 py-1.5 rounded-full border border-gray-300 bg-white text-gray-600 text-xs tracking-wider transition-all hover:bg-gray-100"
+                    data-tag="Horror">#Horror</button>
+                <button
+                    class="filter-btn px-4 py-1.5 rounded-full border border-gray-300 bg-white text-gray-600 text-xs tracking-wider transition-all hover:bg-gray-100"
+                    data-tag="Artistic">#Artistic</button>
+                <button
+                    class="filter-btn px-4 py-1.5 rounded-full border border-gray-300 bg-white text-gray-600 text-xs tracking-wider transition-all hover:bg-gray-100"
+                    data-tag="Event">#Event</button>
+            </div>
+
+            <!-- Worlds Grid -->
+            <div id="worlds-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <!-- Items will be injected here by JS -->
+                <div class="col-span-full text-center py-20 text-gray-400">
+                    Loading worlds...
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-white py-12">
+        <div class="container mx-auto px-6 text-center">
+            <h2 class="text-xl tracking-widest mb-4">VRC-LIFE</h2>
+            <p class="text-gray-400 text-sm font-light">&copy; 2026 VRC-LIFE Portal. All Rights Reserved.</p>
+        </div>
+    </footer>
+
+    <script src="js/script.js"></script>
+</body>
+
+</html>

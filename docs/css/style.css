@@ -1,0 +1,31 @@
+/* Custom CSS imports are handled in HTML via Google Fonts */
+
+body {
+    font-family: 'Inter', 'Noto Sans JP', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Scrollbar styling for a cleaner look */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1; 
+}
+ 
+::-webkit-scrollbar-thumb {
+    background: #ccc; 
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #999; 
+}
+
+/* Custom utilities if needed */
+.text-justify-inter {
+    text-align: justify;
+    text-justify: inter-character;
+}

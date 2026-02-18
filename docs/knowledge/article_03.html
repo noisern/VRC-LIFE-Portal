@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Troubleshooting | KNOWLEDGE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Noto+Sans+JP:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+
+<body class="bg-[#FDFCF5] text-[#333333] font-sans tracking-wide">
+    <header
+        class="h-16 bg-[#FDFCF5]/90 backdrop-blur-sm flex items-center px-6 border-b border-[#E5E4DE] sticky top-0 z-50">
+        <a href="../index.html" class="block">
+            <img src="../images/logo.png" alt="VRC-LIFE" class="h-8 object-contain">
+        </a>
+        <nav class="ml-auto hidden md:flex space-x-8 text-xs tracking-widest text-[#999999]">
+            <a href="../index.html" class="hover:text-[#333333] transition-colors">HOME</a>
+            <a href="index.html" class="text-[#333333]">KNOWLEDGE</a>
+        </nav>
+    </header>
+
+    <article class="max-w-4xl mx-auto px-6 py-12">
+        <div class="mb-8 text-center">
+            <span
+                class="text-red-600 border border-red-100 bg-red-50 px-3 py-1 text-xs tracking-widest rounded-sm">トラブル解決</span>
+            <h1 class="text-3xl md:text-5xl font-light mt-6 mb-4 leading-tight">解決！アバターがピンク色（Shaderエラー）になった時の対処法</h1>
+            <p class="text-[#999999] text-sm tracking-widest">2026.02.16 • By VRC-LIFE</p>
+        </div>
+
+        <div class="w-full aspect-video mb-12 overflow-hidden bg-[#F0F0F0]">
+            <img src="../images/TREND.jpg" alt="Article Thumbnail" class="w-full h-full object-cover">
+        </div>
+
+        <div class="prose prose-lg max-w-none text-[#666666] font-light leading-relaxed">
+            <p>アバターやワールドに入った時、視界がショッキングピンクに染まったことはありませんか？それはShader（シェーダー）のエラーです。</p>
+
+            <h3 class="text-[#333333] mt-12 mb-6 text-2xl font-normal">原因：シェーダーが入っていない</h3>
+            <p>そのアバターやワールドで使用されているシェーダーが、あなたのPCのプロジェクトに含まれていない場合に発生します。特に「LilToon」や「Poiyomi」などの人気シェーダーは、事前にインポートしておく必要があります。
+            </p>
+
+            <h3 class="text-[#333333] mt-12 mb-6 text-2xl font-normal">対処法</h3>
+            <p>アバターの説明書（Readme）を読み、指定されているシェーダーをBOOTHなどからダウンロードして導入してください。シェーダーを入れた後にアバターのUnitypackageを再度インポートすると、自動的に直ることが多いです。
+            </p>
+        </div>
+
+        <div class="mt-20 pt-10 border-t border-[#E5E4DE] text-center">
+            <a href="index.html"
+                class="inline-block border border-gray-700 text-[#999999] px-8 py-3 hover:bg-[#333333] hover:text-white transition-all tracking-widest text-xs">BACK
+                TO KNOWLEDGE</a>
+        </div>
+    </article>
+
+    <footer class="bg-[#FDFCF5] text-[#999999] text-xs py-10 text-center border-t border-[#E5E4DE]">
+        <p>&copy; 2026 VRC-LIFE Portal. All rights reserved.</p>
+    </footer>
+</body>
+
+</html>

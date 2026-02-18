@@ -1,0 +1,74 @@
+[
+  {
+    "id": 1,
+    "name": "Nostalgic Room",
+    "author": "VRC_User_01",
+    "image": "https://placehold.co/600x400/2a2a2a/FFF?text=Nostalgic+Room",
+    "tags": ["Chill", "Home"],
+    "description": "A quiet room filled with memories of the past.",
+    "link": "#"
+  },
+  {
+    "id": 2,
+    "name": "Cyber City 2077",
+    "author": "NeoCreator",
+    "image": "https://placehold.co/600x400/1a1a2a/00FFFF?text=Cyber+City",
+    "tags": ["Sci-Fi", "Scenery"],
+    "description": "A sprawling cyberpunk metropolis with neon lights.",
+    "link": "#"
+  },
+  {
+    "id": 3,
+    "name": "Haunted Mansion",
+    "author": "GhostHunter",
+    "image": "https://placehold.co/600x400/000000/FF0000?text=Haunted+Mansion",
+    "tags": ["Horror", "Game"],
+    "description": "Can you escape the ghosts wandering these halls?",
+    "link": "#"
+  },
+  {
+    "id": 4,
+    "name": "Sunset Beach",
+    "author": "SummerVibe",
+    "image": "https://placehold.co/600x400/FF8C00/FFF?text=Sunset+Beach",
+    "tags": ["Chill", "Scenery", "Event"],
+    "description": "Relax by the ocean with beautiful sunset views.",
+    "link": "#"
+  },
+  {
+    "id": 5,
+    "name": "Abstract Void",
+    "author": "ArtMaster",
+    "image": "https://placehold.co/600x400/FFFFFF/000?text=Abstract+Void",
+    "tags": ["Artistic", "Abstract"],
+    "description": "An experimental space challenging your perception.",
+    "link": "#"
+  },
+  {
+    "id": 6,
+    "name": "Cat Café",
+    "author": "NekoLover",
+    "image": "https://placehold.co/600x400/FFE4B5/8B4513?text=Cat+Cafe",
+    "tags": ["Chill", "Animal"],
+    "description": "Play with cute cats in a cozy café setting.",
+    "link": "#"
+  },
+  {
+    "id": 7,
+    "name": "Space Station Alpha",
+    "author": "AstroBoy",
+    "image": "https://placehold.co/600x400/000080/FFF?text=Space+Station",
+    "tags": ["Sci-Fi", "Game"],
+    "description": "Defend the station from alien invaders.",
+    "link": "#"
+  },
+  {
+    "id": 8,
+    "name": "Sakura Shrine",
+    "author": "TraditionKeeper",
+    "image": "https://placehold.co/600x400/FFC0CB/FFF?text=Sakura+Shrine",
+    "tags": ["Scenery", "Chill"],
+    "description": "A beautiful shrine covered in cherry blossoms.",
+    "link": "#"
+  }
+]

@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ITEM LIST | VRC-LIFE Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;900&family=Noto+Sans+JP:wght@300;400;500;900&family=Playfair+Display:ital,wght@0,400;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+
+<body class="bg-[#FDFCF5] text-[#333333] font-sans tracking-wide">
+    <div
+        class="fixed top-0 left-0 w-full h-screen bg-[url('../images/knowledge_header_bg.png')] bg-cover bg-center opacity-10 pointer-events-none z-0">
+    </div>
+
+    <!-- Header -->
+    <header
+        class="h-16 flex items-center px-6 border-b border-[#E5E4DE] sticky top-0 z-50 bg-[#FDFCF5]/90 backdrop-blur-sm">
+        <a href="../index.html" class="block">
+            <img src="../images/logo.png" alt="VRC-LIFE" class="h-8 object-contain">
+        </a>
+        <nav class="ml-auto hidden md:flex space-x-8 text-xs tracking-widest text-[#666666]">
+            <a href="../index.html" class="hover:text-black transition-colors">HOME</a>
+            <a href="../knowledge/index.html" class="hover:text-black transition-colors">KNOWLEDGE</a>
+            <a href="index.html" class="text-black font-bold">FASHION</a>
+        </nav>
+        <!-- Mobile Menu Placeholder -->
+        <button class="ml-auto md:hidden text-[#333333]">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 6h16M4 12h16M4 18h16">
+                </path>
+            </svg>
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="relative z-10 px-6 py-12 max-w-[1920px] mx-auto">
+
+        <!-- Page Title -->
+        <h1 class="text-4xl md:text-6xl font-serif-display font-bold text-center mb-4 tracking-tight italic">
+            ITEM LIST
+        </h1>
+        <div class="text-center mb-12">
+            <p id="last-updated" class="text-[10px] text-[#999] tracking-wider"></p>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="flex justify-center mb-8">
+            <div class="relative w-full max-w-md">
+                <input id="item-search" type="text" placeholder="アイテム名・ショップ名で検索..." class="w-full border border-[#E5E4DE] bg-transparent px-4 py-2.5 text-sm tracking-wide
+                           focus:outline-none focus:border-[#333] transition-colors" style="font-family: inherit;">
+                <svg style="position:absolute;right:12px;top:50%;transform:translateY(-50%);width:16px;height:16px;color:#999;"
+                    fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                        d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                </svg>
+            </div>
+        </div>
+
+        <!-- Toggle / Filter Controls -->
+        <div class="flex flex-col items-center gap-6 mb-12">
+            <!-- Category Toggle -->
+            <div class="inline-flex border border-[#333333]">
+                <button
+                    class="filter-btn active px-6 py-2 text-xs font-bold tracking-widest bg-[#333333] text-white transition-colors"
+                    data-filter="all">ALL</button>
+                <button
+                    class="filter-btn px-6 py-2 text-xs font-bold tracking-widest hover:bg-gray-100 border-l border-[#333333] transition-colors"
+                    data-filter="mens">MEN'S</button>
+                <button
+                    class="filter-btn px-6 py-2 text-xs font-bold tracking-widest hover:bg-gray-100 border-l border-[#333333] transition-colors"
+                    data-filter="womens">WOMEN'S</button>
+                <button
+                    class="filter-btn px-6 py-2 text-xs font-bold tracking-widest hover:bg-gray-100 border-l border-[#333333] transition-colors"
+                    data-filter="kids">KIDS'</button>
+            </div>
+
+            <!-- Taste Tags -->
+            <div class="flex flex-wrap justify-center gap-3 text-[10px] tracking-widest uppercase text-[#666666]">
+                <button class="taste-filter hover:text-black hover:underline transition-colors"
+                    data-taste="cyber">#Cyberpunk</button>
+                <button class="taste-filter hover:text-black hover:underline transition-colors"
+                    data-taste="street">#Street</button>
+                <button class="taste-filter hover:text-black hover:underline transition-colors"
+                    data-taste="wa-modern">#Wa-Modern</button>
+                <button class="taste-filter hover:text-black hover:underline transition-colors"
+                    data-taste="ryousangata">#量産型</button>
+                <button class="taste-filter hover:text-black hover:underline transition-colors"
+                    data-taste="jirai">#地雷系</button>
+                <button class="taste-filter hover:text-black hover:underline transition-colors"
+                    data-taste="fantasy">#Fantasy</button>
+                <button class="taste-filter hover:text-black hover:underline transition-colors"
+                    data-taste="casual">#Casual</button>
+                <button class="taste-filter hover:text-black hover:underline transition-colors"
+                    data-taste="gothic">#Gothic</button>
+                <button class="taste-filter hover:text-black hover:underline transition-colors"
+                    data-taste="pop">#Pop</button>
+            </div>
+
+            <!-- Type Tags -->
+            <div class="flex flex-wrap justify-center gap-3 text-[10px] tracking-widest text-[#888]">
+                <button class="type-filter hover:text-black hover:underline transition-colors"
+                    data-type="avatar">Avatar</button>
+                <span class="text-[#DDD]">|</span>
+                <button class="type-filter hover:text-black hover:underline transition-colors"
+                    data-type="costume">Costume</button>
+                <span class="text-[#DDD]">|</span>
+                <button class="type-filter hover:text-black hover:underline transition-colors"
+                    data-type="accessory">Accessory</button>
+                <span class="text-[#DDD]">|</span>
+                <button class="type-filter hover:text-black hover:underline transition-colors"
+                    data-type="texture">Texture</button>
+            </div>
+
+            <!-- Item Count -->
+            <p id="item-count" class="text-[10px] text-[#BBB] tracking-widest"></p>
+        </div>
+
+        <!-- Items Grid (Dynamic) -->
+        <div id="item-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-8 gap-y-16">
+            <p class="text-center text-gray-400 col-span-full py-8">読み込み中...</p>
+        </div>
+
+        <!-- BOOTH Guideline Notice -->
+        <div class="mt-24 mb-12 text-center">
+            <p class="text-[10px] text-[#999] leading-relaxed tracking-wider">
+                本サイトはBOOTHのガイドラインに基づき、VRChatコミュニティの活性化のために情報を集約しています。<br>
+                掲載情報はBOOTH上の公開データを元に自動取得しています。掲載の取り下げをご希望の場合はお問い合わせください。
+            </p>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#FDFCF5] text-[#999999] text-xs py-10 text-center border-t border-[#E5E4DE] relative z-10">
+        <p class="mb-2 tracking-widest">VRC-LIFE PORTAL</p>
+        <p>&copy; 2026 VRC-LIFE Portal. All rights reserved.</p>
+    </footer>
+
+    <script src="../js/fashion.js"></script>
+</body>
+
+</html>

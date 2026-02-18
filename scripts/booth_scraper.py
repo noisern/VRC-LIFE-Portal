@@ -179,8 +179,7 @@ def fetch_item_detail(booth_url: str, session: requests.Session) -> dict:
     商品詳細ページから追加情報（説明文、スキ数）を取得する。
     スキ数は以下の順で取得を試みる:
     1. LD+JSON (interactionStatistic)
-    2. CSS Selector (.js-like-count, .wish-list-counter)
-    3. aria-label ("スキ！N")
+    2. Button/Link attribute (aria-label, data-count) - Robust Regex
     """
     soup = fetch_page(booth_url, session)
     if not soup:
@@ -196,14 +195,12 @@ def fetch_item_detail(booth_url: str, session: requests.Session) -> dict:
     # いいね数 (Robust Extraction)
     likes = 0
     found_source = None
-    raw_text = ""
-
+    
     # 1. LD+JSON
     try:
         ld_json_el = soup.select_one('script[type="application/ld+json"]')
         if ld_json_el:
             data = json.loads(ld_json_el.string)
-            # Check interactionStatistic for UserInteraction (likes)
             if 'interactionStatistic' in data:
                 stats = data['interactionStatistic']
                 if isinstance(stats, list):
@@ -219,42 +216,58 @@ def fetch_item_detail(booth_url: str, session: requests.Session) -> dict:
     except Exception as e:
         logger.debug(f"LD+JSON extraction failed: {e}")
 
-    # 2. CSS Selectors (Fallback)
+    # 2. Attribute Extraction (Targeting buttons/links with aria-label)
     if not found_source:
-        likes_el = soup.select_one(".js-like-count, .wish-list-counter, .like-count")
-        if likes_el:
-            raw_text = likes_el.get_text(strip=True)
-            likes = parse_likes_text(raw_text)
-            found_source = f"CSS Selector (text: {raw_text})"
-
-    # 3. Aria-label (Fallback)
-    if not found_source:
-        aria_el = soup.select_one('[aria-label*="スキ"], [aria-label*="Like"], [aria-label*="Loves"]')
-        if aria_el:
-            raw_text = aria_el.get("aria-label", "")
-            likes = parse_likes_text(raw_text)
-            found_source = f"Aria Label (text: {raw_text})"
+        # User requested: button[aria-label] or .js-like-btn[aria-label]
+        # We also check 'a' tags just in case
+        targets = soup.select("button[aria-label], a[aria-label], .js-like-btn")
+        
+        for el in targets:
+            label = el.get("aria-label", "")
+            if not label: 
+                continue
+            
+            # Regex: Extract ALL digit sequences, pick the first one
+            # e.g. "スキ！ 123" -> ["123"]
+            # e.g. "Loves 456" -> ["456"]
+            # e.g. "Like 789" -> ["789"]
+            matches = re.findall(r'\d+', label)
+            if matches:
+                # Potential candidate
+                # Heuristic: The number should be reasonable (e.g. not '2024' year if it's the only one, but usually likes count is distinct)
+                # For now, we take the *first* number found in a likely "like" button
+                
+                # Check if it looks like a like button
+                is_like_btn = False
+                class_str = " ".join(el.get("class", []))
+                if "like" in class_str or "wish" in class_str or "Like" in label or "スキ" in label or "Loves" in label:
+                     likes = int(matches[0])
+                     found_source = f"Attribute (aria-label='{label}')"
+                     break
 
     if found_source:
-        # logger.debug(f"Found likes for {booth_url}: {likes} (Source: {found_source})")
         detail["likes"] = likes
     else:
         logger.warning(f"Could not find likes for {booth_url} (Result: 0)")
         
-        # --- DEBUG: Dump 'Loves' related HTML to log ---
-        # limits to first few checks to avoid log spam, handled by caller or assumed occasional
+        # --- DEBUG: Dump ALL aria-labels to log ---
         try:
-            loves_nodes = soup.find_all(string=re.compile("Loves|Like|スキ", re.I))
-            if loves_nodes:
-                logger.warning(f"  [DEBUG] Found 'Loves/Like/スキ' text nodes in {booth_url}:")
-                for i, node in enumerate(loves_nodes[:3]): # Show first 3 matches
-                    parent = node.parent
-                    snippet = str(parent)[:200].replace("\n", " ") # First 200 chars of parent HTML
-                    logger.warning(f"    Match {i+1}: ...{snippet}...")
+            page_title = soup.title.string if soup.title else "No Title"
+            logger.warning(f"  [DEBUG] Page Title: {page_title}")
+            
+            all_aria_els = soup.select("[aria-label]")
+            if all_aria_els:
+                logger.warning(f"  [DEBUG] Found {len(all_aria_els)} elements with aria-label:")
+                for i, el in enumerate(all_aria_els):
+                    label = el.get("aria-label")
+                    tag_name = el.name
+                    classes = " ".join(el.get("class", []))
+                    logger.warning(f"    [{i}] <{tag_name} class='{classes}'> aria-label='{label}'")
             else:
-                logger.warning(f"  [DEBUG] No 'Loves/Like/スキ' text found on page.")
+                logger.warning("  [DEBUG] No elements with aria-label found.")
+
         except Exception as e:
-            logger.warning(f"  [DEBUG] Failed to dump HTML: {e}")
+            logger.warning(f"  [DEBUG] Failed to dump attributes: {e}")
         # -----------------------------------------------
 
         detail["likes"] = 0

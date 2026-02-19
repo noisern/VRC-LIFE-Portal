@@ -23,10 +23,8 @@ logger = logging.getLogger(__name__)
 # NOTE: This URL should point to the "WORLD" sheet CSV export.
 # If using "Publish to Web", ensure the GID matches the WORLD sheet.
 # For now, using the same base, User might need to update this or I will check if I can derive it.
-WORLD_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ98u4MEiJ3o8jesqRUMv7hrg8atUwxQoIggjMlRWlHFCeCNDCObcde1cjOVXKVW5BFscQe7Z5zsG2_/pub?gid=162444085&single=true&output=csv" 
-# ADDED gid=0 temporarily, user needs to verify the gid for "WORLD" sheet.
-# If they used "Publish to Web" for the specific sheet, the URL is unique.
-# I will use the one from booth_scraper as base but flag it.
+# Update URL to output=html
+WORLD_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ98u4MEiJ3o8jesqRUMv7hrg8atUwxQoIggjMlRWlHFCeCNDCObcde1cjOVXKVW5BFscQe7Z5zsG2_/pub?gid=162444085&single=true&output=html"
 
 OUTPUT_FILE = "docs/data/worlds.json"
 USER_AGENT = "VRC-LIFE Portal Bot"
@@ -36,40 +34,77 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 }
 
-def fetch_csv_data(csv_url: str) -> list[dict]:
+def fetch_sheet_data(url: str) -> list[dict]:
     """
-    Fetch and parse CSV from Google Sheets.
-    Columns:
-    A: Name
-    B: URL
-    C: Category
-    D: Date (YYYY-MM-DD)
-    E: Author
-    F: Description
-    G: Custom Image URL (Fallback)
+    Fetch and parse data from Google Sheets (HTML format to preserve links).
+    Columns (0-indexed):
+    0: Name
+    1: URL
+    2: Category
+    3: Date (YYYY-MM-DD)
+    4: Author (Contains Link)
+    5: Description
+    6: Custom Image URL (Fallback)
     """
     try:
-        response = requests.get(csv_url)
+        response = requests.get(url)
+        response.encoding = 'utf-8'
         response.raise_for_status()
         
-        # Parse CSV
-        f = io.StringIO(response.text)
-        reader = csv.reader(f)
+        from bs4 import BeautifulSoup
+        soup = BeautifulSoup(response.text, 'html.parser')
+        table = soup.find('table')
+        
+        if not table:
+            logger.error("No table found in Sheet HTML")
+            return []
+
+        rows = table.find_all('tr')
         items = []
         
-        for i, row in enumerate(reader):
-            # Skip header if it exists? Assuming user might have header.
-            # Simple heuristic: check if col B looks like a URL.
-            if len(row) < 6:
+        # Skip header (heuristically determine start)
+        # Usually, first row is header.
+        start_row = 1 
+        
+        for i in range(start_row, len(rows)):
+            cells = rows[i].find_all('td')
+            if len(cells) < 6:
                 continue
+                
+            # Helper to get text safe
+            def get_text(idx):
+                return cells[idx].get_text(strip=True) if idx < len(cells) else ""
+
+            world_name = get_text(0)
+            world_url = get_text(1)
+            category = get_text(2)
+            date_created = get_text(3)
             
-            world_name = row[0].strip()
-            world_url = row[1].strip()
-            category = row[2].strip()
-            date_created = row[3].strip()
-            author = row[4].strip()
-            description = row[5].strip()
-            custom_image_url = row[6].strip() if len(row) > 6 else ""
+            # Author: Extract text AND link
+            author_cell = cells[4] if len(cells) > 4 else None
+            author = get_text(4)
+            author_url = ""
+            if author_cell:
+                link = author_cell.find('a')
+                if link and link.get('href'):
+                    author_url = link.get('href')
+                    # Google redirects links usually (google.com/url?q=...), need to cleanup?
+                    # Pubhtml usually gives direct links or google redirect.
+                    # If it starts with google.com/url, we might need to parse.
+                    # But often usually works directly or browser handles it. 
+                    # Let's clean it just in case:
+                    if "google.com/url" in author_url:
+                        try:
+                            from urllib.parse import parse_qs, urlparse
+                            parsed = urlparse(author_url)
+                            qs = parse_qs(parsed.query)
+                            if 'q' in qs:
+                                author_url = qs['q'][0]
+                        except:
+                            pass
+
+            description = get_text(5)
+            custom_image_url = get_text(6)
 
             if not world_url.startswith("http"):
                 continue
@@ -81,12 +116,13 @@ def fetch_csv_data(csv_url: str) -> list[dict]:
                 "date_created": date_created,
                 "author": author,
                 "description": description,
-                "custom_image_url": custom_image_url
+                "custom_image_url": custom_image_url,
+                "author_url": author_url
             })
             
         return items
     except Exception as e:
-        logger.error(f"Failed to fetch CSV: {e}")
+        logger.error(f"Failed to fetch Sheet Data: {e}")
         return []
 
 def scrape_vrchat_image(url: str) -> str:
@@ -120,8 +156,8 @@ def main():
     logger.info("Starting World Scraper...")
     
     # 1. Fetch Source Data
-    source_items = fetch_csv_data(WORLD_CSV_URL)
-    logger.info(f"Fetched {len(source_items)} items from CSV")
+    source_items = fetch_sheet_data(WORLD_SHEET_URL)
+    logger.info(f"Fetched {len(source_items)} items from Sheet")
     
     # 2. Process Items
     final_items = []
@@ -158,6 +194,7 @@ def main():
             "author": item["author"],
             "description": item["description"],
             "thumbnailUrl": image_url,
+            "authorUrl": item["author_url"],
             "fetchedAt": datetime.now(timezone.utc).isoformat()
         }
         final_items.append(world_obj)

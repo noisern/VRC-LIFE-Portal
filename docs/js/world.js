@@ -150,12 +150,17 @@ function createWorldCard(world) {
     // Title
     const title = document.createElement('h3');
     title.className = 'text-lg font-serif-display italic font-bold leading-tight mb-1 group-hover:underline decoration-1 underline-offset-4';
+    title.style.fontFamily = "'Shippori Mincho', serif"; // Force Serif for Japanese
     title.textContent = world.name;
 
     // Author
     const author = document.createElement('p');
     author.className = 'text-xs text-gray-500 mb-3 font-light';
-    author.textContent = `by ${world.author || 'Unknown'}`;
+    if (world.authorUrl) {
+        author.innerHTML = `by <a href="${world.authorUrl}" target="_blank" class="hover:text-black hover:underline transition-colors">${world.author || 'Unknown'}</a>`;
+    } else {
+        author.textContent = `by ${world.author || 'Unknown'}`;
+    }
 
     // Description
     const desc = document.createElement('p');

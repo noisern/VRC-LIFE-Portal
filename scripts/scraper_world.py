@@ -23,8 +23,9 @@ logger = logging.getLogger(__name__)
 # NOTE: This URL should point to the "WORLD" sheet CSV export.
 # If using "Publish to Web", ensure the GID matches the WORLD sheet.
 # For now, using the same base, User might need to update this or I will check if I can derive it.
-# Update URL to output=html
-WORLD_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ98u4MEiJ3o8jesqRUMv7hrg8atUwxQoIggjMlRWlHFCeCNDCObcde1cjOVXKVW5BFscQe7Z5zsG2_/pub?gid=162444085&single=true&output=html"
+# Update URL to the specific sheet's pubhtml endpoint which returns a table
+# gid=162444085 is for the WORLD sheet
+WORLD_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ98u4MEiJ3o8jesqRUMv7hrg8atUwxQoIggjMlRWlHFCeCNDCObcde1cjOVXKVW5BFscQe7Z5zsG2_/pubhtml/sheet?headers=false&gid=162444085"
 
 OUTPUT_FILE = "docs/data/worlds.json"
 USER_AGENT = "VRC-LIFE Portal Bot"
@@ -34,80 +35,102 @@ HEADERS = {
     "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
 }
 
+def clean_google_url(url: str) -> str:
+    """Extract actual URL from Google redirect wrapper if present."""
+    if "google.com/url" in url:
+        try:
+            from urllib.parse import parse_qs, urlparse
+            parsed = urlparse(url)
+            qs = parse_qs(parsed.query)
+            if 'q' in qs:
+                return qs['q'][0]
+        except:
+            pass
+    return url
+
 def fetch_sheet_data(url: str) -> list[dict]:
     """
-    Fetch and parse data from Google Sheets (HTML format to preserve links).
-    Columns (0-indexed):
+    Fetch and parse data from Google Sheets (HTML format).
+    HTML Table Columns (based on inspection):
     0: Name
-    1: URL
-    2: Category
+    1: URL (Link)
+    2: Category (Tag)
     3: Date (YYYY-MM-DD)
-    4: Author (Contains Link)
-    5: Description
-    6: Custom Image URL (Fallback)
+    4: Author (Link + Text)
+    5: Status (Ignored)
+    6: Description
     """
     try:
-        response = requests.get(url)
+        logger.info(f"Fetching from {url}")
+        response = requests.get(url, headers=HEADERS)
         response.encoding = 'utf-8'
         response.raise_for_status()
         
         from bs4 import BeautifulSoup
         soup = BeautifulSoup(response.text, 'html.parser')
-        table = soup.find('table')
+        
+        # The table usually has class 'waffle'
+        table = soup.find('table', class_='waffle') or soup.find('table')
         
         if not table:
             logger.error("No table found in Sheet HTML")
+            # Log snippet for debugging
+            logger.error(f"Response snippet: {response.text[:500]}")
             return []
 
         rows = table.find_all('tr')
         items = []
         
-        # Skip header (heuristically determine start)
-        # Usually, first row is header.
-        start_row = 1 
+        # Skip header rows. 
+        # Usually row 0 is headers, row 1 is freeze bar, row 2+ is data?
+        # In the sample: Row 0 is Headers. Row 1 is empty (shim). Row 2 is data.
+        # We can iterate and check content.
         
-        for i in range(start_row, len(rows)):
-            cells = rows[i].find_all('td')
-            if len(cells) < 6:
+        for i, row in enumerate(rows):
+            cells = row.find_all('td')
+            if len(cells) < 3: # Need at least Name, URL, Category
                 continue
                 
             # Helper to get text safe
+            def get_cell(idx):
+                return cells[idx] if idx < len(cells) else None
+                
             def get_text(idx):
-                return cells[idx].get_text(strip=True) if idx < len(cells) else ""
+                c = get_cell(idx)
+                return c.get_text(strip=True) if c else ""
+
+            # Check if this is a header row (heuristic: "ワールド名" in first cell)
+            first_text = get_text(0)
+            if "ワールド名" in first_text or not first_text:
+                continue
 
             world_name = get_text(0)
-            world_url = get_text(1)
-            category = get_text(2)
-            date_created = get_text(3)
             
-            # Author: Extract text AND link
-            author_cell = cells[4] if len(cells) > 4 else None
-            author = get_text(4)
-            author_url = ""
-            if author_cell:
-                link = author_cell.find('a')
-                if link and link.get('href'):
-                    author_url = link.get('href')
-                    # Google redirects links usually (google.com/url?q=...), need to cleanup?
-                    # Pubhtml usually gives direct links or google redirect.
-                    # If it starts with google.com/url, we might need to parse.
-                    # But often usually works directly or browser handles it. 
-                    # Let's clean it just in case:
-                    if "google.com/url" in author_url:
-                        try:
-                            from urllib.parse import parse_qs, urlparse
-                            parsed = urlparse(author_url)
-                            qs = parse_qs(parsed.query)
-                            if 'q' in qs:
-                                author_url = qs['q'][0]
-                        except:
-                            pass
-
-            description = get_text(5)
-            custom_image_url = get_text(6)
+            # URL is in cell 1 'a' tag
+            c1 = get_cell(1)
+            world_url_raw = c1.find('a')['href'] if c1 and c1.find('a') else get_text(1)
+            world_url = clean_google_url(world_url_raw)
 
             if not world_url.startswith("http"):
                 continue
+
+            category = get_text(2)
+            date_created = get_text(3)
+            
+            # Author: Cell 4
+            c4 = get_cell(4)
+            author = get_text(4)
+            author_url = ""
+            if c4:
+                link = c4.find('a')
+                if link and link.get('href'):
+                    author_url = clean_google_url(link.get('href'))
+
+            # Skip cell 5 (Status)
+            description = get_text(6)
+            
+            # Custom Image: Not present in this HTML view, explicit empty
+            custom_image_url = ""
 
             items.append({
                 "name": world_name,

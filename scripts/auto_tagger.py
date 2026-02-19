@@ -246,7 +246,11 @@ def tag_all_items(items: list[dict]) -> list[dict]:
     taste_stats = {}
     type_stats = {}
     for item in tagged:
-        cat_stats[item["category"]] = cat_stats.get(item["category"], 0) + 1
+        # item["category"] is now a list, but we want to count individual occurrences
+        cats = item["category"] if isinstance(item["category"], list) else [item["category"]]
+        for c in cats:
+            cat_stats[c] = cat_stats.get(c, 0) + 1
+            
         for t in item["taste"]:
             taste_stats[t] = taste_stats.get(t, 0) + 1
         type_stats[item["type"]] = type_stats.get(item["type"], 0) + 1

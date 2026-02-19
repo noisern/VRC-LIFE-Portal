@@ -153,37 +153,77 @@ def _match_rules(text: str, rules: dict[str, list[str]]) -> list[str]:
 def tag_item(item: dict) -> dict:
     """
     1つのアイテムにタグを付与する。
-
-    付与されるタグ:
-    - category: mens / womens / kids
-    - taste: [cyber, street, wa-modern, ...]
-    - type: avatar / costume / accessory / texture
+    
+    Args:
+        item: Scraped item dict
+        
+    Returns:
+        Tagged item dict (category, taste, type added)
     """
     # 検索対象テキスト
     search_text = f"{item.get('name', '')} {item.get('description', '')}"
 
-    # カテゴリ判定
-    category = "womens"  # デフォルト（VRChatは女性アバターが多い）
-    for cat, rules in CATEGORY_RULES.items():
-        all_patterns = rules["keywords"] + rules["avatars"]
-        for pattern in all_patterns:
-            if re.search(pattern, search_text, re.IGNORECASE):
-                category = cat
-                break
+    # === 1. Category (Target Gender - CSV Col C) ===
+    # Manual Override: Use exact value, split by comma if multiple
+    manual_gender_str = item.get("manual_gender", "").strip().upper()
+    categories = []
 
-    # テイスト判定
+    if manual_gender_str:
+        # Handle "MEN'S, WOMEN'S" -> ["MEN'S", "WOMEN'S"]
+        raw_genders = [g.strip() for g in manual_gender_str.split(',')]
+        for g in raw_genders:
+            if g == "ALL":
+                categories.append("ALL")
+            elif g == "WOMEN'S":
+                categories.append("WOMEN'S")
+            elif g == "MEN'S":
+                categories.append("MEN'S")
+            elif g == "KIDS'":
+                categories.append("KIDS'")
+            elif g == "XENO'S":
+                categories.append("XENO'S")
+            else:
+                 categories.append(g) # Keep other raw values just in case
+    else:
+        # Auto Detect (Fallback) - Default to WOMEN'S if nothing found
+        found_cat = "WOMEN'S"
+        for cat, rules in CATEGORY_RULES.items():
+            all_patterns = rules["keywords"] + rules["avatars"]
+            for pattern in all_patterns:
+                if re.search(pattern, search_text, re.IGNORECASE):
+                    if cat == "mens": found_cat = "MEN'S"
+                    elif cat == "kids": found_cat = "KIDS'"
+                    else: found_cat = "WOMEN'S"
+                    break
+        categories.append(found_cat)
+    
+    # Ensure unique
+    categories = list(set(categories))
+
+
+    # === 2. Item Type (Item Category - CSV Col B) ===
+    # Manual Override
+    manual_type_raw = item.get("manual_item_type", "").strip() 
+    display_type = manual_type_raw if manual_type_raw else "FASHION" # Default fallback
+    
+    # User Request: Use Granular CSV Values for Filtering (No Mapping)
+    # Filter 'type' will be the UPPERCASE version of the raw value for consistent matching.
+    item_type = display_type.upper()
+
+    # === 3. Taste (Tags) ===
     tastes = _match_rules(search_text, TASTE_RULES)
     if not tastes:
-        tastes = ["casual"]  # デフォルト
-
-    # 種別判定
-    types = _match_rules(search_text, TYPE_RULES)
-    item_type = types[0] if types else "costume"  # デフォルト
+        tastes = ["casual"]
 
     # タグ付与
-    item["category"] = category
+    item["category"] = categories # Now a LIST
     item["taste"] = tastes
-    item["type"] = item_type
+    item["type"] = item_type # For Filtering (AVATAR, FASHION...)
+    item["display_type"] = display_type # For Display Label (COSTUME, GIMMICK...)
+    
+    # Clean up temporary fields
+    item.pop("manual_gender", None)
+    item.pop("manual_item_type", None)
 
     return item
 

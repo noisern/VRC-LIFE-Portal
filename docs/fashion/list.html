@@ -65,63 +65,90 @@
 
         <!-- Toggle / Filter Controls -->
         <div class="flex flex-col items-center gap-6 mb-12">
-            <!-- Category Toggle -->
-            <div class="inline-flex border border-[#333333]">
+            <!-- Gender Tabs (formerly Category) -->
+            <div class="inline-flex border border-[#333333] mb-4">
                 <button
-                    class="filter-btn active px-6 py-2 text-xs font-bold tracking-widest bg-[#333333] text-white transition-colors"
-                    data-filter="all">ALL</button>
+                    class="gender-tab active px-4 md:px-6 py-2 text-[10px] md:text-xs font-bold tracking-widest bg-[#333333] text-white transition-colors"
+                    data-gender="ALL">ALL</button>
                 <button
-                    class="filter-btn px-6 py-2 text-xs font-bold tracking-widest hover:bg-gray-100 border-l border-[#333333] transition-colors"
-                    data-filter="mens">MEN'S</button>
+                    class="gender-tab px-4 md:px-6 py-2 text-[10px] md:text-xs font-bold tracking-widest hover:bg-gray-100 border-l border-[#333333] transition-colors"
+                    data-gender="WOMEN'S">WOMEN'S</button>
                 <button
-                    class="filter-btn px-6 py-2 text-xs font-bold tracking-widest hover:bg-gray-100 border-l border-[#333333] transition-colors"
-                    data-filter="womens">WOMEN'S</button>
+                    class="gender-tab px-4 md:px-6 py-2 text-[10px] md:text-xs font-bold tracking-widest hover:bg-gray-100 border-l border-[#333333] transition-colors"
+                    data-gender="MEN'S">MEN'S</button>
                 <button
-                    class="filter-btn px-6 py-2 text-xs font-bold tracking-widest hover:bg-gray-100 border-l border-[#333333] transition-colors"
-                    data-filter="kids">KIDS'</button>
+                    class="gender-tab px-4 md:px-6 py-2 text-[10px] md:text-xs font-bold tracking-widest hover:bg-gray-100 border-l border-[#333333] transition-colors"
+                    data-gender="KIDS'">KIDS'</button>
+                <button
+                    class="gender-tab px-4 md:px-6 py-2 text-[10px] md:text-xs font-bold tracking-widest hover:bg-gray-100 border-l border-[#333333] transition-colors"
+                    data-gender="XENO'S">XENO'S</button>
             </div>
 
-            <!-- Taste Tags -->
-            <div class="flex flex-wrap justify-center gap-3 text-[10px] tracking-widest uppercase text-[#666666]">
-                <button class="taste-filter hover:text-black hover:underline transition-colors"
-                    data-taste="cyber">#Cyberpunk</button>
-                <button class="taste-filter hover:text-black hover:underline transition-colors"
-                    data-taste="street">#Street</button>
-                <button class="taste-filter hover:text-black hover:underline transition-colors"
-                    data-taste="wa-modern">#Wa-Modern</button>
-                <button class="taste-filter hover:text-black hover:underline transition-colors"
-                    data-taste="ryousangata">#量産型</button>
-                <button class="taste-filter hover:text-black hover:underline transition-colors"
-                    data-taste="jirai">#地雷系</button>
-                <button class="taste-filter hover:text-black hover:underline transition-colors"
-                    data-taste="fantasy">#Fantasy</button>
-                <button class="taste-filter hover:text-black hover:underline transition-colors"
-                    data-taste="casual">#Casual</button>
-                <button class="taste-filter hover:text-black hover:underline transition-colors"
-                    data-taste="gothic">#Gothic</button>
-                <button class="taste-filter hover:text-black hover:underline transition-colors"
-                    data-taste="pop">#Pop</button>
+            <!-- Item Category Filter (Type) -->
+            <div class="flex flex-wrap justify-center gap-x-4 gap-y-2 mb-4 text-[10px] tracking-widest text-[#888]">
+                <button class="type-filter hover:text-black hover:underline transition-colors"
+                    data-type="AVATAR">AVATAR</button>
+                <span class="text-[#DDD]">|</span>
+                <button class="type-filter hover:text-black hover:underline transition-colors"
+                    data-type="COSTUME">COSTUME</button>
+                <span class="text-[#DDD]">|</span>
+                <button class="type-filter hover:text-black hover:underline transition-colors"
+                    data-type="ACCESSORIES">ACCESSORIES</button>
+                <span class="text-[#DDD]">|</span>
+                <button class="type-filter hover:text-black hover:underline transition-colors"
+                    data-type="HAIR STYLE">HAIR STYLE</button>
+                <span class="text-[#DDD]">|</span>
+                <button class="type-filter hover:text-black hover:underline transition-colors"
+                    data-type="TEXTURE">TEXTURE</button>
+                <span class="text-[#DDD]">|</span>
+                <button class="type-filter hover:text-black hover:underline transition-colors"
+                    data-type="ITEM">ITEM</button>
+                <span class="text-[#DDD]">|</span>
+                <button class="type-filter hover:text-black hover:underline transition-colors"
+                    data-type="GIMMICK">GIMMICK</button>
+                <span class="text-[#DDD]">|</span>
+                <button class="type-filter hover:text-black hover:underline transition-colors"
+                    data-type="TOOLS & SYSTEMS">TOOLS & SYSTEMS</button>
+                <span class="text-[#DDD]">|</span>
+                <button class="type-filter hover:text-black hover:underline transition-colors"
+                    data-type="POSE ANIMATION">POSE</button>
+                <span class="text-[#DDD]">|</span>
+                <button class="type-filter hover:text-black hover:underline transition-colors"
+                    data-type="SHAPE KEY">SHAPE KEY</button>
             </div>
 
-            <!-- Type Tags -->
-            <div class="flex flex-wrap justify-center gap-3 text-[10px] tracking-widest text-[#888]">
-                <button class="type-filter hover:text-black hover:underline transition-colors"
-                    data-type="avatar">Avatar</button>
-                <span class="text-[#DDD]">|</span>
-                <button class="type-filter hover:text-black hover:underline transition-colors"
-                    data-type="costume">Costume</button>
-                <span class="text-[#DDD]">|</span>
-                <button class="type-filter hover:text-black hover:underline transition-colors"
-                    data-type="accessory">Accessory</button>
-                <span class="text-[#DDD]">|</span>
-                <button class="type-filter hover:text-black hover:underline transition-colors"
-                    data-type="texture">Texture</button>
-                <span class="text-[#DDD]">|</span>
-                <button class="type-filter hover:text-black hover:underline transition-colors"
-                    data-type="tool">Tool</button>
-                <span class="text-[#DDD]">|</span>
-                <button class="type-filter hover:text-black hover:underline transition-colors"
-                    data-type="pose">Pose</button>
+            <!-- Taste Tags (Style) - Dedicated Area -->
+            <div class="w-full max-w-4xl bg-white border border-[#E5E4DE] p-6 text-center">
+                <p class="text-[9px] text-[#BBB] tracking-widest mb-4 block">FILTER BY STYLE</p>
+                <div class="flex flex-wrap justify-center gap-3 text-[10px] tracking-widest uppercase text-[#666666]">
+                    <button
+                        class="taste-filter px-3 py-1 border border-transparent hover:border-[#333] transition-colors"
+                        data-taste="cyber">#Cyberpunk</button>
+                    <button
+                        class="taste-filter px-3 py-1 border border-transparent hover:border-[#333] transition-colors"
+                        data-taste="street">#Street</button>
+                    <button
+                        class="taste-filter px-3 py-1 border border-transparent hover:border-[#333] transition-colors"
+                        data-taste="wa-modern">#Wa-Modern</button>
+                    <button
+                        class="taste-filter px-3 py-1 border border-transparent hover:border-[#333] transition-colors"
+                        data-taste="ryousangata">#量産型</button>
+                    <button
+                        class="taste-filter px-3 py-1 border border-transparent hover:border-[#333] transition-colors"
+                        data-taste="jirai">#地雷系</button>
+                    <button
+                        class="taste-filter px-3 py-1 border border-transparent hover:border-[#333] transition-colors"
+                        data-taste="fantasy">#Fantasy</button>
+                    <button
+                        class="taste-filter px-3 py-1 border border-transparent hover:border-[#333] transition-colors"
+                        data-taste="casual">#Casual</button>
+                    <button
+                        class="taste-filter px-3 py-1 border border-transparent hover:border-[#333] transition-colors"
+                        data-taste="gothic">#Gothic</button>
+                    <button
+                        class="taste-filter px-3 py-1 border border-transparent hover:border-[#333] transition-colors"
+                        data-taste="pop">#Pop</button>
+                </div>
             </div>
 
             <!-- Item Count -->

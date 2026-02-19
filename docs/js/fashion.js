@@ -91,9 +91,9 @@ function createNewArrivalCard(item) {
 // ========================================
 
 let allItems = [];
-let currentCategory = 'all';
+let currentGender = 'ALL'; // Formerly currentCategory
 let currentTaste = null;
-let currentType = null;
+let currentType = null; // Item Type (Avatar, Costume, etc.)
 let searchQuery = '';
 
 async function loadItemList(container) {
@@ -116,7 +116,7 @@ async function loadItemList(container) {
         renderItems(container);
 
         // フィルター初期化
-        initCategoryFilters(container);
+        initGenderFilters(container);
         initTasteFilters(container);
         initTypeFilters(container);
         initSearchBar(container);
@@ -129,19 +129,39 @@ async function loadItemList(container) {
 
 function getFilteredItems() {
     return allItems.filter(item => {
-        const matchCategory = currentCategory === 'all' || item.category === currentCategory;
+        // Gender Filter (Category) - ARRAY CHECK
+        // Logic: 
+        // 1. If tab is ALL (currentGender == 'ALL'), show everything.
+        // 2. If item logic has 'ALL' in category list, show in ANY tab.
+        // 3. Otherwise, item category list must include currentGender.
+        let matchGender = false;
+        if (currentGender === 'ALL') {
+            matchGender = true;
+        } else {
+            // Check if item has universal availability
+            // Ensure item.category is an array (auto_tagger.py now returns list)
+            const categories = Array.isArray(item.category) ? item.category : [item.category];
+
+            if (categories.includes('ALL')) {
+                matchGender = true;
+            } else {
+                // Check exact match in list
+                matchGender = categories.includes(currentGender);
+            }
+        }
+
         const matchTaste = !currentTaste || (item.taste && item.taste.includes(currentTaste));
         const matchType = !currentType || item.type === currentType;
         const matchSearch = !searchQuery ||
             item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
             item.shopName.toLowerCase().includes(searchQuery.toLowerCase());
 
-        return matchCategory && matchTaste && matchType && matchSearch;
+        return matchGender && matchTaste && matchType && matchSearch;
     });
 }
 
 function renderItems(container) {
-    const filtered = getFilteredItems();
+    let filtered = getFilteredItems();
     updateCount(filtered.length);
 
     if (filtered.length === 0) {
@@ -154,6 +174,14 @@ function renderItems(container) {
         return;
     }
 
+    // Sort Logic: Category -> Date (Newest)
+    filtered.sort((a, b) => {
+        if (a.type < b.type) return -1;
+        if (a.type > b.type) return 1;
+        // Same category, sort by date desc
+        return new Date(b.fetchedAt) - new Date(a.fetchedAt);
+    });
+
     container.innerHTML = filtered.map(item => createItemCard(item)).join('');
 }
 
@@ -163,10 +191,9 @@ function createItemCard(item) {
         'ryousangata': '量産型', 'jirai': '地雷系', 'fantasy': 'Fantasy',
         'casual': 'Casual', 'gothic': 'Gothic', 'pop': 'Pop'
     };
-    const typeLabels = {
-        'avatar': 'Avatar', 'costume': 'Costume', 'accessory': 'Accessory', 'texture': 'Texture',
-        'tool': 'Tool', 'pose': 'Pose'
-    };
+
+    // Display the RAW type value (e.g. Costume, Gimmick)
+    const displayType = item.display_type || item.type;
 
     const tasteTags = (item.taste || []).map(t =>
         `<span class="text-[9px] tracking-wider text-[#999] uppercase">#${tasteLabels[t] || t}</span>`
@@ -180,7 +207,7 @@ function createItemCard(item) {
                      class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                      onerror="this.style.display='none'">
                 <div class="absolute top-2 right-2 bg-white/90 px-2 py-0.5 text-[9px] font-bold tracking-wider">
-                    ${typeLabels[item.type] || item.type}
+                    ${displayType}
                 </div>
             </div>
 
@@ -219,18 +246,18 @@ function updateCount(count) {
 // フィルター初期化
 // ========================================
 
-function initCategoryFilters(container) {
-    const btns = document.querySelectorAll('.filter-btn');
+function initGenderFilters(container) {
+    const btns = document.querySelectorAll('.gender-tab');
     btns.forEach(btn => {
         btn.addEventListener('click', () => {
             btns.forEach(b => {
-                b.classList.remove('bg-[#333333]', 'text-white');
+                b.classList.remove('active', 'bg-[#333333]', 'text-white');
                 b.classList.add('hover:bg-gray-100');
             });
             btn.classList.remove('hover:bg-gray-100');
-            btn.classList.add('bg-[#333333]', 'text-white');
+            btn.classList.add('active', 'bg-[#333333]', 'text-white');
 
-            currentCategory = btn.getAttribute('data-filter');
+            currentGender = btn.getAttribute('data-gender');
             renderItems(container);
         });
     });

@@ -50,8 +50,15 @@ def fetch_page(url: str, session: requests.Session) -> Optional[BeautifulSoup]:
 import csv
 import io
 
-def fetch_csv_urls(csv_url: str) -> list[str]:
-    """GoogleスプレッドシートのCSVからURLリストを取得する。"""
+def fetch_csv_urls(csv_url: str) -> list[dict]:
+    """
+    GoogleスプレッドシートのCSVからアイテム情報を取得する。
+    
+    Expected CSV Columns:
+    A: URL
+    B: Category (AVATAR / FASHION / TECHNICAL / NON-HUMAN) -> Maps to system `type`
+    C: Type (WOMEN'S / MEN'S / KIDS' / XENO'S / ALL) -> Maps to system `category`
+    """
     try:
         response = requests.get(csv_url)
         response.raise_for_status()
@@ -59,14 +66,33 @@ def fetch_csv_urls(csv_url: str) -> list[str]:
         # CSV parse
         f = io.StringIO(response.text)
         reader = csv.reader(f)
-        urls = []
+        items = []
+        seen_urls = set()
+
         for row in reader:
             if not row: continue
+            if len(row) < 1: continue
+            
             url = row[0].strip()
-            if url.startswith("http"):
-                urls.append(url)
+            if not url.startswith("http"):
+                continue
+
+            # 重複チェック
+            if url in seen_urls:
+                continue
+            seen_urls.add(url)
+
+            # Get additional columns
+            manual_item_type = row[1].strip() if len(row) > 1 else ""
+            manual_gender = row[2].strip() if len(row) > 2 else ""
+
+            items.append({
+                "url": url,
+                "manual_item_type": manual_item_type,
+                "manual_gender": manual_gender
+            })
         
-        return list(set(urls)) # Unique
+        return items
     except Exception as e:
         logger.error(f"Failed to fetch CSV: {e}")
         return []
@@ -170,15 +196,16 @@ def scrape_booth(min_likes: int = 0, fetch_details: bool = False, dry_run: bool 
     session.headers.update(HEADERS)
 
     logger.info(f"Fetching URL list from CSV...")
-    target_urls = fetch_csv_urls(CSV_URL)
-    logger.info(f"Target URLs: {len(target_urls)}")
+    target_items = fetch_csv_urls(CSV_URL)
+    logger.info(f"Target Items: {len(target_items)}")
     
     all_items = []
     seen_ids = set() 
     
-    for i, url in enumerate(target_urls):
+    for i, item_data in enumerate(target_items):
+        url = item_data["url"]
         try:
-            logger.info(f"[{i+1}/{len(target_urls)}] Scraping: {url}")
+            logger.info(f"[{i+1}/{len(target_items)}] Scraping: {url}")
             soup = fetch_page(url, session)
             if not soup:
                 continue
@@ -186,13 +213,17 @@ def scrape_booth(min_likes: int = 0, fetch_details: bool = False, dry_run: bool 
             item = parse_item_detail_page(soup, url)
             
             if item:
+                # Add manual tags from CSV
+                item["manual_item_type"] = item_data["manual_item_type"]
+                item["manual_gender"] = item_data["manual_gender"]
+
                 # Check duplication
                 if item["id"] not in seen_ids:
                     seen_ids.add(item["id"])
                     all_items.append(item)
-                    logger.info(f"  -> OK: {item["name"]} (Likes: {item["likes"]})")
+                    logger.info(f"  -> OK: {item['name']}")
                 else:
-                    logger.info(f"  -> Duplicate ID: {item["id"]}")
+                    logger.info(f"  -> Duplicate ID: {item['id']}")
             
         except Exception as e:
             logger.error(f"Error extracting {url}: {e}")
@@ -216,6 +247,8 @@ def _get_sample_data() -> list[dict]:
             "isR18": False,
             "description": "VRChat対応のサイバーパンク風ジャケット。対応アバター：舞夜、桔梗、セレスティア。",
             "fetchedAt": now,
+            "manual_gender": "WOMEN'S",
+            "manual_item_type": "Costume"
         },
         {
             "id": "booth-2345678",
@@ -228,6 +261,8 @@ def _get_sample_data() -> list[dict]:
             "isR18": False,
             "description": "舞夜対応の和風モダンドレスです。改変歓迎。",
             "fetchedAt": now,
+            "manual_gender": "WOMEN'S",
+            "manual_item_type": "Costume"
         },
         {
             "id": "booth-3456789",
@@ -240,6 +275,8 @@ def _get_sample_data() -> list[dict]:
             "isR18": False,
             "description": "ストリート系スニーカー。ボーン対応済み。",
             "fetchedAt": now,
+            "manual_gender": "MEN'S",
+            "manual_item_type": "Costume"
         },
         {
             "id": "booth-4567890",
@@ -252,6 +289,8 @@ def _get_sample_data() -> list[dict]:
             "isR18": False,
             "description": "量産型コーデにぴったりのリボンヘッドドレス。対応アバター多数。",
             "fetchedAt": now,
+            "manual_gender": "WOMEN'S",
+            "manual_item_type": "FASHION" # Mapped ACCESSORY to FASHION as per user list
         },
         {
             "id": "booth-5678901",
@@ -264,6 +303,8 @@ def _get_sample_data() -> list[dict]:
             "isR18": False,
             "description": "地雷系コーデに合うチョーカー5種セット。",
             "fetchedAt": now,
+            "manual_gender": "WOMEN'S",
+            "manual_item_type": "FASHION"
         },
         {
             "id": "booth-6789012",
@@ -276,6 +317,8 @@ def _get_sample_data() -> list[dict]:
             "isR18": False,
             "description": "ファンタジー風騎士の鎧。PBR対応、Quest対応済み。",
             "fetchedAt": now,
+            "manual_gender": "ALL",
+            "manual_item_type": "FASHION"
         },
         {
             "id": "booth-7890123",
@@ -288,18 +331,8 @@ def _get_sample_data() -> list[dict]:
             "isR18": False,
             "description": "スモールアバター向けふわもこパジャマ。マヌカ、ルシナ対応。",
             "fetchedAt": now,
-        },
-        {
-            "id": "booth-8901234",
-            "name": "R-18 セクシーランジェリー",
-            "price": 1000,
-            "shopName": "AdultVRC",
-            "boothUrl": "https://booth.pm/ja/items/8901234",
-            "thumbnailUrl": "https://booth.pximg.net/sample8.jpg",
-            "likes": 300,
-            "isR18": True,
-            "description": "成人向けランジェリーセット。",
-            "fetchedAt": now,
+            "manual_gender": "KIDS'",
+            "manual_item_type": "FASHION"
         },
         {
             "id": "booth-9012345",
@@ -312,6 +345,8 @@ def _get_sample_data() -> list[dict]:
             "isR18": False,
             "description": "ゴシックロリータ風ドレス。桔梗・セレスティア対応。",
             "fetchedAt": now,
+            "manual_gender": "WOMEN'S",
+            "manual_item_type": "FASHION"
         },
         {
             "id": "booth-0123456",
@@ -324,30 +359,22 @@ def _get_sample_data() -> list[dict]:
             "isR18": False,
             "description": "テクスチャ改変用素材集。肌・服・目のテクスチャが入っています。",
             "fetchedAt": now,
+             "manual_gender": "ALL",
+            "manual_item_type": "TECHNICAL"
         },
         {
             "id": "booth-1111111",
-            "name": "ネオン系グローアクセサリーパック",
+            "name": "XENO'S Tech Arm",
             "price": 1800,
             "shopName": "NeonVRC",
             "boothUrl": "https://booth.pm/ja/items/1111111",
             "thumbnailUrl": "https://booth.pximg.net/sample11.jpg",
             "likes": 220,
             "isR18": False,
-            "description": "光るネオン系アクセサリー詰め合わせ。サイバーパンクコーデに。",
+            "description": "異形頭・メカアバター向けパーツ。",
             "fetchedAt": now,
-        },
-        {
-            "id": "booth-2222222",
-            "name": "カジュアルパーカー＆デニムセット",
-            "price": 2000,
-            "shopName": "CasualVRC",
-            "boothUrl": "https://booth.pm/ja/items/2222222",
-            "thumbnailUrl": "https://booth.pximg.net/sample12.jpg",
-            "likes": 310,
-            "isR18": False,
-            "description": "カジュアルなパーカーとデニムパンツのセット。男性アバター対応。",
-            "fetchedAt": now,
+            "manual_gender": "XENO'S",
+            "manual_item_type": "AVATAR" # Or NON-HUMAN? User said category is AVATAR/FASHION/TECHNICAL/NON-HUMAN. Let's assume NON-HUMAN for xeno parts if they are parts, or AVATAR if avatar.
         },
     ]
 

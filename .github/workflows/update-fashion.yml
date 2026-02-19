@@ -1,4 +1,4 @@
-name: Update FASHION Items
+name: Update Items (Fashion & World)
 
 on:
   schedule:
@@ -43,10 +43,13 @@ jobs:
           path: logs/
           retention-days: 5
 
-      - name: Commit updated items.json
+      - name: Run World scraper
+        run: python scripts/scraper_world.py
+
+      - name: Commit updated data
         uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          commit_message: 'auto: update fashion items [skip ci]'
-          file_pattern: docs/data/items.json
+          commit_message: 'auto: update items & worlds [skip ci]'
+          file_pattern: docs/data/*.json
           commit_user_name: 'VRC-LIFE Bot'
           commit_user_email: 'bot@vrc-life-portal.example.com'

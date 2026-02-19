@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="referrer" content="no-referrer">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WORLD | VRC-LIFE Portal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600&family=Noto+Sans+JP:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+    <style>
+        /* Custom Scrollbar for horizontal tabs on mobile */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+
+<body class="bg-[#FDFCF5] text-[#333333] font-sans tracking-wide">
+
+    <div
+        class="fixed top-0 left-0 w-full h-screen bg-[url('../images/knowledge_header_bg.png')] bg-cover bg-center opacity-10 pointer-events-none z-0">
+    </div>
+
+    <!-- Header -->
+    <header
+        class="h-16 flex items-center px-6 border-b border-[#E5E4DE] sticky top-0 z-50 bg-[#FDFCF5]/90 backdrop-blur-sm">
+        <a href="../index.html" class="block">
+            <img src="../images/logo.png" alt="VRC-LIFE" class="h-8 object-contain">
+        </a>
+        <nav class="ml-auto hidden md:flex space-x-8 text-xs tracking-widest text-[#666666]">
+            <a href="../index.html" class="hover:text-black transition-colors">HOME</a>
+            <a href="../knowledge/index.html" class="hover:text-black transition-colors">KNOWLEDGE</a>
+            <a href="../fashion/index.html" class="hover:text-black transition-colors">FASHION</a>
+            <a href="index.html" class="text-black font-bold">WORLD</a>
+            <!-- <a href="#" class="hover:text-black transition-colors">TREND</a> -->
+            <!-- <a href="#" class="hover:text-black transition-colors">CONNECTION</a> -->
+        </nav>
+        <button class="ml-auto md:hidden text-[#333333]">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M4 6h16M4 12h16M4 18h16">
+                </path>
+            </svg>
+        </button>
+    </header>
+
+    <!-- Main Content -->
+    <main class="relative z-10 pt-12 pb-20 px-4 md:px-8 max-w-[1920px] mx-auto">
+
+        <!-- Title -->
+        <div class="text-center mb-12">
+            <h2 class="text-4xl md:text-5xl font-serif-display font-light italic mb-2 tracking-tight">WORLD ARCHIVE</h2>
+            <p class="text-[10px] tracking-[0.2em] text-[#999999]">DISCOVER NEW REALITIES</p>
+        </div>
+
+        <!-- Controls (Search & Filter) -->
+        <div class="mb-12 flex flex-col items-center gap-6">
+
+            <!-- Category Tabs -->
+            <div class="w-full overflow-x-auto hide-scrollbar text-center" id="filter-container">
+                <div class="inline-flex border border-[#333333] whitespace-nowrap">
+                    <button
+                        class="filter-btn active px-4 md:px-6 py-2 text-[10px] md:text-xs font-bold tracking-widest bg-[#333333] text-white transition-colors"
+                        data-tag="ALL">ALL</button>
+                    <button
+                        class="filter-btn px-4 md:px-6 py-2 text-[10px] md:text-xs font-bold tracking-widest hover:bg-gray-100 border-l border-[#333333] transition-colors"
+                        data-tag="SOCIAL">SOCIAL</button>
+                    <button
+                        class="filter-btn px-4 md:px-6 py-2 text-[10px] md:text-xs font-bold tracking-widest hover:bg-gray-100 border-l border-[#333333] transition-colors"
+                        data-tag="CHILL">CHILL</button>
+                    <button
+                        class="filter-btn px-4 md:px-6 py-2 text-[10px] md:text-xs font-bold tracking-widest hover:bg-gray-100 border-l border-[#333333] transition-colors"
+                        data-tag="GAME">GAME</button>
+                    <button
+                        class="filter-btn px-4 md:px-6 py-2 text-[10px] md:text-xs font-bold tracking-widest hover:bg-gray-100 border-l border-[#333333] transition-colors"
+                        data-tag="Horror">HORROR</button>
+                    <button
+                        class="filter-btn px-4 md:px-6 py-2 text-[10px] md:text-xs font-bold tracking-widest hover:bg-gray-100 border-l border-[#333333] transition-colors"
+                        data-tag="Photography">PHOTO</button>
+                    <button
+                        class="filter-btn px-4 md:px-6 py-2 text-[10px] md:text-xs font-bold tracking-widest hover:bg-gray-100 border-l border-[#333333] transition-colors"
+                        data-tag="Event">EVENT</button>
+                    <button
+                        class="filter-btn px-4 md:px-6 py-2 text-[10px] md:text-xs font-bold tracking-widest hover:bg-gray-100 border-l border-[#333333] transition-colors"
+                        data-tag="EXHIBITION">EXHIBITION</button>
+                </div>
+            </div>
+
+            <!-- Search & Sort (To be implemented fully in JS if needed, currently visual/placeholder logic in JS handles sort) -->
+            <!-- For now, we rely on JS default sort (Newest) -->
+
+        </div>
+
+        <!-- Worlds Grid -->
+        <div id="worlds-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-x-8 gap-y-12">
+            <!-- Items injected by JS -->
+            <div class="col-span-full text-center py-20 text-gray-400 font-light tracking-widest">
+                LOADING DATA...
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-[#FDFCF5] text-[#999999] text-xs py-10 text-center border-t border-[#E5E4DE] relative z-10">
+        <div class="container mx-auto px-6">
+            <h2 class="text-sm tracking-[0.2em] mb-4 text-[#333333]">VRC-LIFE PORTAL</h2>
+            <p>&copy; 2026 VRC-LIFE Portal. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="../js/world.js"></script>
+</body>
+
+</html>

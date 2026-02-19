@@ -23,7 +23,7 @@ logger = logging.getLogger(__name__)
 # NOTE: This URL should point to the "WORLD" sheet CSV export.
 # If using "Publish to Web", ensure the GID matches the WORLD sheet.
 # For now, using the same base, User might need to update this or I will check if I can derive it.
-WORLD_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ98u4MEiJ3o8jesqRUMv7hrg8atUwxQoIggjMlRWlHFCeCNDCObcde1cjOVXKVW5BFscQe7Z5zsG2_/pub?gid=0&single=true&output=csv" 
+WORLD_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ98u4MEiJ3o8jesqRUMv7hrg8atUwxQoIggjMlRWlHFCeCNDCObcde1cjOVXKVW5BFscQe7Z5zsG2_/pub?gid=162444085&single=true&output=csv" 
 # ADDED gid=0 temporarily, user needs to verify the gid for "WORLD" sheet.
 # If they used "Publish to Web" for the specific sheet, the URL is unique.
 # I will use the one from booth_scraper as base but flag it.

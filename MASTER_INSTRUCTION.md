@@ -39,4 +39,34 @@ VRChat等の仮想空間における生活、ファッション、知識を、�
 - **Heading (Serif)**: `Playfair Display` (Italic 300)
     - ページタイトル、メインキャッチに使用。
 - **Body (JP)**: `Zen Kaku Gothic New` (Light 300)
-    - 本文
+    - 本文、説明文に使用。
+- **Meta/Nav (Sans)**: `Inter` (Tracking: 0.3em)
+    - 英語ナビ、タグ、日付に使用。大文字＋広字間を基本とする。
+
+---
+
+## 4. UI Component Specifications
+
+### 4.1 Global Navigation
+- **Height**: 80px / ガラス質感 (`backdrop-blur-md`) / 下部に極細線。
+- **Links**: 小文字英語、10px、字間 0.3em。アクティブ時に繊細なアンダーライン。
+
+### 4.2 Dynamic Gallery Grid
+- **WORLD Grid**: 16:9比率 / 最大3〜4列。
+- **FASHION Grid**: 3:4比率 / 縦長レイアウトで詳細を強調。
+- **Loading State**: データ取得中は "COLLECTING FRAGMENTS..." 等の洗練されたプレースホルダーを表示。
+
+---
+
+## 5. Interaction & Motion
+
+- **Easing**: `cubic-bezier(0.165, 0.84, 0.44, 1)` (滑らかな減速)
+- **Entrance**: ページ読み込み時、要素を時間差（Stagger）で下から上にフェードイン。
+- **Image Hover**: 1.2秒かけて `scale(1.05)`。急激な変化は避け、静的な美しさを維持。
+
+---
+
+## 6. Maintenance & Performance
+- **Image Optimization**: `imageUrl` に指定する画像は、事前に圧縮（WebP推奨）されたものを使用。
+- **Filtering Logic**: スプシから取得した `tags` 文字列をパースし、フロントエンド側で動的にフィルタリングを実施。
+- **Anti-aliasing**: `-webkit-font-smoothing: antialiased;` を全要素に適用。

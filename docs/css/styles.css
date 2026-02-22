@@ -2286,3 +2286,134 @@ video {
 /* ==========================================================================
    END
    ========================================================================== */
+
+/* ==========================================================================
+   KNOWLEDGE: Article Markdown Styles
+   ========================================================================== */
+.knowledge-article {
+    color: #333333;
+    line-height: 1.8;
+}
+
+.knowledge-article h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    margin-top: 3.5rem;
+    margin-bottom: 2rem;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+    padding-bottom: 0.5rem;
+}
+
+.knowledge-article h2 {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.75rem;
+    font-weight: 300;
+    margin-top: 3rem;
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.05em;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    padding-bottom: 0.5rem;
+}
+
+.knowledge-article h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    color: #444;
+}
+
+.knowledge-article p {
+    margin-bottom: 1.5rem;
+    font-weight: 300;
+}
+
+/* Base image styling for width expanding and captions */
+.knowledge-article img {
+    width: 100%;
+    max-width: 100%;
+    height: auto;
+    margin: 2rem 0 0.5rem 0;
+    display: block;
+}
+
+.knowledge-article .img-caption {
+    display: block;
+    text-align: center;
+    font-size: 0.75rem;
+    color: #999999;
+    margin-bottom: 2rem;
+    letter-spacing: 0.05em;
+}
+
+/* Mini-malist Tables with border-px */
+.knowledge-article table {
+    width: 100%;
+    margin-top: 2rem;
+    margin-bottom: 2rem;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+}
+
+.knowledge-article th, 
+.knowledge-article td {
+    padding: 1rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    text-align: left;
+}
+
+.knowledge-article th {
+    font-weight: 600;
+    background-color: #FDFCF5;
+    color: #666;
+    letter-spacing: 0.05em;
+}
+
+/* Blockquotes (Editorial Notes) */
+.knowledge-article blockquote {
+    background-color: #F9F9F9;
+    border-left: 2px solid #DCAE96; /* Accent color from design token */
+    padding: 1.5rem;
+    margin: 2rem 0;
+    font-style: normal;
+    position: relative;
+    border-radius: 0 4px 4px 0;
+}
+
+.knowledge-article blockquote::before {
+    content: 'EDITORIAL NOTE';
+    display: block;
+    font-size: 0.65rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    color: #DCAE96;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+.knowledge-article blockquote p {
+    margin-bottom: 0;
+    font-size: 0.9rem;
+    color: #555;
+}
+
+.knowledge-article ul,
+.knowledge-article ol {
+    margin-bottom: 1.5rem;
+    padding-left: 1.5rem;
+    font-weight: 300;
+}
+
+.knowledge-article li {
+    margin-bottom: 0.5rem;
+}
+
+.knowledge-article ul {
+    list-style-type: disc;
+}
+
+.knowledge-article ol {
+    list-style-type: decimal;
+}

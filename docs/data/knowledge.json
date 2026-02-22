@@ -2,25 +2,25 @@
     {
         "id": "1",
         "title": "初めての仮想現実：VRChatで最初にするべきこと",
-        "category": "VRC START GUIDE",
-        "image": "../images/world.jpg",
+        "category": "VRChat入門",
+        "image_url": "../images/WORLD.jpg",
         "summary": "VRChatを始めたばかりのあなたへ。アカウント作成から最初のワールド設定、基本的な操作方法までを優しく解説します。",
-        "link": "article_01.html"
+        "content": "VRChatへようこそ。無限の可能性が広がるこの世界に足を踏み入れたばかりのあなたに、まず最初にしてほしいことをまとめました。\n\n> VRChatは自由な世界ですが、最初のステップを踏み出すのが最も重要です。\n\n### 1. アカウントの作成\n\nSteamアカウントでもプレイ可能ですが、アバターのアップロードや信頼レベル（Trust Rank）の上昇のためにはVRChat公式アカウントの作成が必須です。\n\n![Account Creation](../images/knowledge_intro.jpg)\n\n### 2. 基本操作の習得\n\n移動、視点変更、メニューの出し方など、Tutorialワールドでしっかりと操作を覚えましょう。特にメニュー画面は頻繁に使用します。\n\n| 操作 | PC (キーボード) | VR (コントローラー) |\n|---|---|---|\n| 移動 | W/A/S/D | 左スティック |\n| 視点 | マウス | 右スティック |\n| メニュー | Esc | Y/Bボタン |\n\n### 3. 最初のフレンド作り\n\n「JP Tutorial」などの初心者向けワールドに行ってみましょう。同じ境遇の人や、初心者を案内したいベテランユーザーに出会えるかもしれません。"
     },
     {
         "id": "2",
         "title": "Unity 2022への移行とアバターアップロードの基本",
-        "category": "UNITY BASICS",
-        "image": "../images/fashion.jpg",
+        "category": "改変基礎",
+        "image_url": "../images/fashion.jpg",
         "summary": "最新のUnity 2022環境への移行手順と、VCCを使用したアバターのアップロード方法をステップバイステップで紹介。",
-        "link": "article_02.html"
+        "content": "Unity 2022への移行とアバターアップロードについての解説です。"
     },
     {
         "id": "3",
         "title": "解決！アバターがピンク色（Shaderエラー）になった時の対処法",
-        "category": "TROUBLESHOOTING",
-        "image": "../images/trend.jpg",
+        "category": "トラブル解決",
+        "image_url": "../images/trend.jpg",
         "summary": "ワールドやアバターがピンク色になってしまう「ショッキングピンク」現象。その原因と、シェーダー設定による解決策を解説。",
-        "link": "article_03.html"
+        "content": "ピンク色になる原因と対処法についての解説です。"
     }
 ]

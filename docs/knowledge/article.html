@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Article | KNOWLEDGE</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Internal:wght@300;400;600&family=Noto+Sans+JP:wght@300;400;500&family=Playfair+Display:ital,wght@0,400;1,300&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+
+    <!-- Simple Markdown Parser inline for KNOWLEDGE -->
+    <script>
+        function parseMarkdown(md) {
+            if (!md) return '';
+
+            // Basic replacements
+            let html = md;
+
+            // Blockquotes
+            // e.g. > This is a note
+            html = html.replace(/^>\s*(.+)$/gm, '<blockquote><p>$1</p></blockquote>');
+
+            // Images with Captions 
+            // e.g. ![caption](url)
+            html = html.replace(/!\[(.*?)\]\((.*?)\)/g, '<img src="$2" alt="$1"><span class="img-caption">$1</span>');
+
+            // Headers
+            html = html.replace(/^### (.*$)/gim, '<h3>$1</h3>');
+            html = html.replace(/^## (.*$)/gim, '<h2>$1</h2>');
+            html = html.replace(/^# (.*$)/gim, '<h1>$1</h1>');
+
+            // Lists (Simple)
+            html = html.replace(/^\- (.*$)/gim, '<li>$1</li>');
+            html = html.replace(/<\/li>\n<li>/g, '</li><li>');
+            html = html.replace(/(<li>.*<\/li>)/s, '<ul>$1</ul>');
+
+            // Bold
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+
+            // Tables (Very simple CSV-like parsing if lines contain |)
+            // A more robust table parser would be better, but this handles simple cases
+            const tableRegex = /^\|(.+)\|$/gm;
+            if (html.match(tableRegex)) {
+                let inTable = false;
+                let tableHtml = '<table>';
+                const lines = html.split('\\n');
+                html = lines.map(line => {
+                    if (line.trim().startsWith('|') && line.trim().endsWith('|')) {
+                        if (!inTable) { inTable = true; }
+                        const cells = line.split('|').filter(c => c.trim() !== '');
+                        // Check if it's a separator line like |---|---|
+                        if (cells[0].includes('---')) return '';
+
+                        let rowHtml = '<tr>';
+                        cells.forEach(cell => {
+                            // If first line of table, maybe th, else td. Let's just use td for simplicity 
+                            // unless we specifically track the header row.
+                            rowHtml += `<td>${cell.trim()}</td>`;
+                        });
+                        rowHtml += '</tr>';
+                        return rowHtml;
+                    } else {
+                        if (inTable) {
+                            inTable = false;
+                            return '</table>\\n' + line;
+                        }
+                        return line;
+                    }
+                }).join('\\n');
+                if (inTable) html += '</table>';
+
+                // Fix th for first row
+                html = html.replace(/<tr>(.*?)<\/tr>/, (match) => {
+                    return match.replace(/<td/g, '<th').replace(/<\/td>/g, '</th>');
+                });
+            }
+
+            // Paragraphs
+            html = html.split('\\n\\n').map(p => {
+                if (p.trim().startsWith('<') || p.trim() === '') return p;
+                return `<p>${p.trim()}</p>`;
+            }).join('\\n');
+
+            return html;
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            // Default to ID 1 as requested if none provided
+            const articleId = urlParams.get('id') || '1';
+
+            try {
+                const response = await fetch('../data/knowledge.json');
+                const articles = await response.json();
+
+                const article = articles.find(a => a.id === articleId);
+                if (article) {
+                    // Update Title
+                    document.title = `${article.title} | KNOWLEDGE`;
+
+                    // Render Header
+                    document.getElementById('article-category').textContent = article.category;
+                    document.getElementById('article-title').textContent = article.title;
+                    if (article.subtitle) {
+                        const sub = document.getElementById('article-subtitle');
+                        sub.textContent = article.subtitle;
+                        sub.classList.remove('hidden');
+                    }
+                    document.getElementById('article-date').textContent = `${article.publish_date || ''} • By VRC-LIFE`;
+
+                    // Render Image
+                    if (article.image_url || article.thumbnail_url) {
+                        document.getElementById('article-image').src = article.image_url || article.thumbnail_url;
+                    }
+
+                    // Render Content
+                    document.getElementById('article-content').innerHTML = parseMarkdown(article.content);
+                } else {
+                    document.getElementById('article-content').innerHTML = '<p>Article not found.</p>';
+                }
+            } catch (error) {
+                console.error('Error loading article:', error);
+            }
+        });
+    </script>
+</head>
+
+<body class="bg-[#FDFCF5] text-[#333333] font-sans tracking-wide">
+    <header
+        class="h-16 bg-[#FDFCF5]/90 backdrop-blur-sm flex items-center px-6 border-b border-[#E5E4DE] sticky top-0 z-50">
+        <a href="../index.html" class="block">
+            <img src="../images/logo.png" alt="VRC-LIFE" class="h-8 object-contain">
+        </a>
+        <nav class="ml-auto hidden md:flex space-x-8 text-xs tracking-widest text-[#999999]">
+            <a href="../index.html" class="hover:text-[#333333] transition-colors">HOME</a>
+            <a href="index.html" class="text-[#333333]">KNOWLEDGE</a>
+        </nav>
+    </header>
+
+    <article class="max-w-4xl mx-auto px-6 py-12">
+        <div class="mb-8 text-center">
+            <span id="article-category"
+                class="text-blue-600 border border-blue-100 bg-blue-50 px-3 py-1 text-xs tracking-widest rounded-sm uppercase">CATEGORY</span>
+            <h1 id="article-title" class="text-3xl md:text-5xl font-serif-display font-light mt-6 mb-2 leading-tight"
+                style="font-family: 'Playfair Display', serif;">Loading...</h1>
+            <p id="article-subtitle" class="text-[#999999] text-sm tracking-wide mb-4 hidden uppercase"></p>
+            <p id="article-date" class="text-[#999999] text-xs tracking-widest"></p>
+        </div>
+
+        <div class="w-full aspect-video mb-12 overflow-hidden bg-[#F0F0F0]">
+            <img id="article-image" src="../images/WORLD.jpg" alt="Article Thumbnail"
+                class="w-full h-full object-cover">
+        </div>
+
+        <!-- Rendered Content Container -->
+        <div id="article-content" class="knowledge-article">
+            <!-- Dynamic Markdown Content Here -->
+        </div>
+
+        <div class="mt-20 pt-10 border-t border-[#E5E4DE] text-center">
+            <a href="index.html"
+                class="inline-block border border-gray-700 text-[#999999] px-8 py-3 hover:bg-[#333333] hover:text-white transition-all tracking-widest text-xs">BACK
+                TO KNOWLEDGE</a>
+        </div>
+    </article>
+
+    <footer class="bg-[#FDFCF5] text-[#999999] text-xs py-10 text-center border-t border-[#E5E4DE]">
+        <p>&copy; 2026 VRC-LIFE Portal. All rights reserved.</p>
+    </footer>
+</body>
+
+</html>

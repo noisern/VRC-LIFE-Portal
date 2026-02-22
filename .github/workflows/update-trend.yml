@@ -1,0 +1,41 @@
+name: Update TREND Items
+
+on:
+  schedule:
+    # 毎日 JST 09:00 (UTC 00:00) に実行
+    - cron: '0 0 * * *'
+  workflow_dispatch:
+    # 手動実行も可能
+
+jobs:
+  update-trend:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r scripts/requirements.txt
+
+      - name: Run Trend scraper
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: python scripts/scraper_trend.py
+
+      - name: Commit updated trends
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: 'auto: update trend articles [skip ci]'
+          file_pattern: docs/data/trends.json
+          commit_user_name: 'VRC-LIFE Bot'
+          commit_user_email: 'bot@vrc-life-portal.example.com'

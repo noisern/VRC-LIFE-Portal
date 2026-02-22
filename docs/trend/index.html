@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TREND | VRC-LIFE</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Zen+Kaku+Gothic+New:wght@300;400;500&family=Shippori+Mincho:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="../css/styles.css">
+
+    <script>
+        tailwind.config = {
+            darkMode: 'media',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Zen Kaku Gothic New"', 'sans-serif'],
+                        serif: ['"Shippori Mincho"', 'serif'],
+                        mono: ['"Inter"', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body class="bg-white text-gray-900 antialiased selection:bg-gray-200 selection:text-black">
+
+    <!-- Navigation -->
+    <nav class="fixed w-full z-50 bg-white/90 backdrop-blur-sm border-b border-gray-100 transition-all duration-300"
+        id="navbar">
+        <div class="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="../index.html"
+                class="text-xl tracking-widest font-light hover:opacity-60 transition-opacity font-mono">VRC-LIFE</a>
+
+            <div class="hidden md:flex space-x-12 text-sm tracking-widest font-light">
+                <a href="../fashion/index.html" class="hover:text-gray-500 transition-colors">FASHION</a>
+                <a href="../world/index.html" class="hover:text-gray-500 transition-colors">WORLD</a>
+                <a href="../trend/index.html" class="border-b border-black pb-1">TREND</a>
+                <a href="../knowledge/index.html" class="hover:text-gray-500 transition-colors">KNOWLEDGE</a>
+                <a href="../connection/index.html" class="hover:text-gray-500 transition-colors">CONNECTION</a>
+            </div>
+
+            <!-- Mobile Menu Button -->
+            <button id="menu-btn" class="md:hidden p-2">
+                <div class="w-6 h-0.5 bg-black mb-1.5 transition-all"></div>
+                <div class="w-6 h-0.5 bg-black mb-1.5 transition-all"></div>
+                <div class="w-6 h-0.5 bg-black transition-all"></div>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Header -->
+    <header class="pt-40 pb-20 px-6">
+        <div class="max-w-3xl mx-auto text-center">
+            <h1 class="text-4xl md:text-5xl font-light mb-6 tracking-widest font-serif">TREND</h1>
+            <p class="text-gray-500 text-sm tracking-widest font-mono">CURATED VRC NEWS & TOPICS</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-3xl mx-auto px-6 pb-32">
+        <!-- Trend List -->
+        <div id="trend-list" class="space-y-8">
+            <!-- Loading State -->
+            <div class="animate-pulse space-y-8">
+                <div class="h-32 bg-gray-50 rounded-xl"></div>
+                <div class="h-32 bg-gray-50 rounded-xl"></div>
+                <div class="h-32 bg-gray-50 rounded-xl"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-100 py-12 px-6 bg-gray-50">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center gap-6">
+            <div class="text-sm font-light tracking-widest">© 2026 VRC-LIFE</div>
+            <div class="flex space-x-6">
+                <a href="#" class="text-gray-400 hover:text-black transition-colors">TWITTER</a>
+                <a href="#" class="text-gray-400 hover:text-black transition-colors">BOOTH</a>
+            </div>
+        </div>
+    </footer>
+
+    <script src="../js/trend.js"></script>
+    <!-- Add Mobile Menu Script logic if needed or include common script -->
+</body>
+
+</html>

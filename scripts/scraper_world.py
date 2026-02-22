@@ -25,7 +25,15 @@ logger = logging.getLogger(__name__)
 # For now, using the same base, User might need to update this or I will check if I can derive it.
 # Update URL to the specific sheet's pubhtml endpoint which returns a table
 # gid=162444085 is for the WORLD sheet
+# Update URL to the specific sheet's pubhtml endpoint which returns a table
+# gid=162444085 is for the WORLD sheet
 WORLD_SHEET_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ98u4MEiJ3o8jesqRUMv7hrg8atUwxQoIggjMlRWlHFCeCNDCObcde1cjOVXKVW5BFscQe7Z5zsG2_/pubhtml/sheet?headers=false&gid=162444085"
+WORLD_CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vQ98u4MEiJ3o8jesqRUMv7hrg8atUwxQoIggjMlRWlHFCeCNDCObcde1cjOVXKVW5BFscQe7Z5zsG2_/pub?gid=162444085&single=true&output=csv"
+
+# Configuration
+# Set to True to use CSV (old reliable method, but no author links)
+# Set to False to use HTML (new method, preserves author links but might be flaky)
+USE_CSV = False
 
 OUTPUT_FILE = "docs/data/worlds.json"
 USER_AGENT = "VRC-LIFE Portal Bot"
@@ -47,6 +55,55 @@ def clean_google_url(url: str) -> str:
         except:
             pass
     return url
+
+def fetch_csv_data(csv_url: str) -> list[dict]:
+    """
+    Fetch and parse CSV from Google Sheets.
+    Fallback method.
+    """
+    try:
+        response = requests.get(csv_url)
+        response.encoding = 'utf-8'
+        response.raise_for_status()
+        
+        f = io.StringIO(response.text)
+        reader = csv.reader(f)
+        items = []
+        
+        for i, row in enumerate(reader):
+            if len(row) < 6:
+                continue
+            
+            # Simple heuristic: check if col 1 looks like a URL.
+            world_name = row[0].strip()
+            world_url = row[1].strip()
+            
+            if not world_url.startswith("http"):
+                continue
+
+            category = row[2].strip()
+            date_created = row[3].strip()
+            author = row[4].strip()
+            description = row[5].strip()
+            custom_image_url = row[6].strip() if len(row) > 6 else ""
+            # Author URL not available in CSV
+            author_url = ""
+
+            items.append({
+                "name": world_name,
+                "url": world_url,
+                "category": category,
+                "date_created": date_created,
+                "author": author,
+                "description": description,
+                "custom_image_url": custom_image_url,
+                "author_url": author_url
+            })
+            
+        return items
+    except Exception as e:
+        logger.error(f"Failed to fetch CSV: {e}")
+        return []
 
 def fetch_sheet_data(url: str) -> list[dict]:
     """
@@ -179,8 +236,14 @@ def main():
     logger.info("Starting World Scraper...")
     
     # 1. Fetch Source Data
-    source_items = fetch_sheet_data(WORLD_SHEET_URL)
-    logger.info(f"Fetched {len(source_items)} items from Sheet")
+    if USE_CSV:
+        logger.info("Mode: CSV (Reliable, no author links)")
+        source_items = fetch_csv_data(WORLD_CSV_URL)
+    else:
+        logger.info("Mode: HTML (Preserves author links)")
+        source_items = fetch_sheet_data(WORLD_SHEET_URL)
+        
+    logger.info(f"Fetched {len(source_items)} items")
     
     # 2. Process Items
     final_items = []
